@@ -24,12 +24,19 @@ import (
 	"time"
 
 	"github.com/go-logr/logr"
+	networkport "github.com/gophercloud/gophercloud/openstack/networking/v2/ports"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/record"
 	"k8s.io/utils/pointer"
+	infrav1 "sigs.k8s.io/cluster-api-provider-openstack/api/v1alpha5"
+	"sigs.k8s.io/cluster-api-provider-openstack/pkg/cloud/services/compute"
+	"sigs.k8s.io/cluster-api-provider-openstack/pkg/cloud/services/loadbalancer"
+	"sigs.k8s.io/cluster-api-provider-openstack/pkg/cloud/services/networking"
+	"sigs.k8s.io/cluster-api-provider-openstack/pkg/cloud/services/provider"
+	"sigs.k8s.io/cluster-api-provider-openstack/pkg/scope"
 	clusterv1 "sigs.k8s.io/cluster-api/api/v1beta1"
 	capierrors "sigs.k8s.io/cluster-api/errors"
 	"sigs.k8s.io/cluster-api/util"
@@ -46,13 +53,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
-
-	infrav1 "sigs.k8s.io/cluster-api-provider-openstack/api/v1alpha5"
-	"sigs.k8s.io/cluster-api-provider-openstack/pkg/cloud/services/compute"
-	"sigs.k8s.io/cluster-api-provider-openstack/pkg/cloud/services/loadbalancer"
-	"sigs.k8s.io/cluster-api-provider-openstack/pkg/cloud/services/networking"
-	"sigs.k8s.io/cluster-api-provider-openstack/pkg/cloud/services/provider"
-	"sigs.k8s.io/cluster-api-provider-openstack/pkg/scope"
 )
 
 // OpenStackMachineReconciler reconciles a OpenStackMachine object.
@@ -384,6 +384,46 @@ func (r *OpenStackMachineReconciler) reconcileNormal(ctx context.Context, scope 
 		err = networkingService.AssociateFloatingIP(openStackMachine, fp, port.ID)
 		if err != nil {
 			handleUpdateMachineError(scope.Logger, openStackMachine, errors.Errorf("Floating IP cannot be associated: %v", err))
+			return ctrl.Result{}, nil
+		}
+	}
+
+	// when machine have machinedeployment.clusters.x-k8s.io/fip=enable annotation
+	// we should give the fip to machine
+	if machine.Annotations["machinedeployment.clusters.x-k8s.io/fip"] == "enable" && len(addresses)==1 {
+		fp, err := networkingService.GetOrCreateFloatingIP(openStackMachine, openStackCluster, clusterName, "")
+		if err != nil {
+			handleUpdateMachineError(scope.Logger, openStackMachine, errors.Errorf("Floating IP cannot be created: %v", err))
+			return ctrl.Result{}, nil
+		}
+		var port = new(networkport.Port)
+		// we should get machine network name if we define network
+		if len(openStackMachine.Spec.Networks) > 0 {
+			nets, err := instanceStatus.NetworkStatus()
+			if err != nil {
+				err = errors.Errorf("failed to get openstackmachine template: %v", err)
+				handleUpdateMachineError(scope.Logger, openStackMachine, err)
+				return ctrl.Result{}, nil
+			}
+			scope.Logger.Info(nets.Addresses()[0].Address)
+			pos, err := networkingService.GetPortFromInstanceIP(*openStackMachine.Spec.InstanceID, nets.Addresses()[0].Address)
+			if err != nil {
+				err = errors.Errorf("getting management port for machine deployment machine %s: %v", err)
+				handleUpdateMachineError(scope.Logger, openStackMachine, err)
+				return ctrl.Result{}, nil
+			}
+			port = &pos[0]
+		} else {
+			port, err = computeService.GetManagementPort(openStackCluster, instanceStatus)
+			if err != nil {
+				err = errors.Errorf("getting management port for control plane machine %s: %v", machine.Name, err)
+				handleUpdateMachineError(scope.Logger, openStackMachine, err)
+				return ctrl.Result{}, nil
+			}
+		}
+		err = networkingService.AssociateFloatingIP(openStackMachine, fp, port.ID)
+		if err != nil {
+			handleUpdateMachineError(scope.Logger, openStackMachine, errors.Errorf("Floating IP %s cannot be associated: %v by port id %s", fp,err,port.ID))
 			return ctrl.Result{}, nil
 		}
 	}
