@@ -55,6 +55,7 @@ import (
 	"sigs.k8s.io/cluster-api-provider-openstack/pkg/cloud/services/networking"
 	"sigs.k8s.io/cluster-api-provider-openstack/pkg/cloud/services/provider"
 	"sigs.k8s.io/cluster-api-provider-openstack/pkg/scope"
+	networkport "github.com/gophercloud/gophercloud/openstack/networking/v2/ports"
 )
 
 // OpenStackMachineReconciler reconciles a OpenStackMachine object.
@@ -392,10 +393,11 @@ func (r *OpenStackMachineReconciler) reconcileNormal(ctx context.Context, scope 
 		return ctrl.Result{RequeueAfter: waitForInstanceBecomeActiveToReconcile}, nil
 	}
 
-	if !util.IsControlPlaneMachine(machine) {
-		scope.Logger.Info("Not a Control plane machine, no floating ip reconcile needed, Reconciled Machine create successfully")
-		return ctrl.Result{}, nil
-	}
+	// machineset vm cloud create fip
+	//if !util.IsControlPlaneMachine(machine) {
+	//	scope.Logger.Info("Not a Control plane machine, no floating ip reconcile needed, Reconciled Machine create successfully")
+	//	return ctrl.Result{}, nil
+	//}
 
 	if openStackCluster.Spec.APIServerLoadBalancer.Enabled {
 		err = r.reconcileLoadBalancerMember(scope, openStackCluster, machine, openStackMachine, instanceNS, clusterName)
@@ -404,21 +406,83 @@ func (r *OpenStackMachineReconciler) reconcileNormal(ctx context.Context, scope 
 			return ctrl.Result{}, fmt.Errorf("reconcile load balancer member: %w", err)
 		}
 	} else if !openStackCluster.Spec.DisableAPIServerFloatingIP {
-		floatingIPAddress := openStackCluster.Spec.ControlPlaneEndpoint.Host
-		if openStackCluster.Spec.APIServerFloatingIP != "" {
-			floatingIPAddress = openStackCluster.Spec.APIServerFloatingIP
+		//easystack eks fip management by machinedeployment.clusters.x-k8s.io/fip=enable annotation
+		//floatingIPAddress := openStackCluster.Spec.ControlPlaneEndpoint.Host
+		//if openStackCluster.Spec.APIServerFloatingIP != "" {
+		//	floatingIPAddress = openStackCluster.Spec.APIServerFloatingIP
+		//}
+		//fp, err := networkingService.GetOrCreateFloatingIP(openStackMachine, openStackCluster, clusterName, floatingIPAddress)
+		//if err != nil {
+		//	conditions.MarkFalse(openStackMachine, infrav1.APIServerIngressReadyCondition, infrav1.FloatingIPErrorReason, clusterv1.ConditionSeverityError, "Floating IP cannot be obtained or created: %v", err)
+		//	return ctrl.Result{}, fmt.Errorf("get or create floating IP %q: %w", floatingIPAddress, err)
+		//}
+		//port, err := computeService.GetManagementPort(openStackCluster, instanceStatus)
+		//if err != nil {
+		//	conditions.MarkFalse(openStackMachine, infrav1.APIServerIngressReadyCondition, infrav1.FloatingIPErrorReason, clusterv1.ConditionSeverityError, "Obtaining management port for control plane machine failed: %v", err)
+		//	return ctrl.Result{}, fmt.Errorf("get management port for control plane machine: %w", err)
+		//}
+		//
+		//if fp.PortID != "" {
+		//	scope.Logger.Info("Floating IP already associated to a port:", "id", fp.ID, "fixed ip", fp.FixedIP, "portID", port.ID)
+		//} else {
+		//	err = networkingService.AssociateFloatingIP(openStackMachine, fp, port.ID)
+		//	if err != nil {
+		//		conditions.MarkFalse(openStackMachine, infrav1.APIServerIngressReadyCondition, infrav1.FloatingIPErrorReason, clusterv1.ConditionSeverityError, "Associating floating IP failed: %v", err)
+		//		return ctrl.Result{}, fmt.Errorf("associate floating IP %q with port %q: %w", fp.FloatingIP, port.ID, err)
+		//	}
+		//}
+	}
+	// when machine have machinedeployment.clusters.x-k8s.io/fip=enable annotation
+	// we should give the fip to machine
+	if (machine.Annotations["machinedeployment.clusters.x-k8s.io/fip"] == "enable") {
+		fipAddress := ""
+		if machine.Annotations["machinedeployment.clusters.x-k8s.io/fip-address"] != "" {
+			fipAddress = machine.Annotations["machinedeployment.clusters.x-k8s.io/fip-address"]
 		}
-		fp, err := networkingService.GetOrCreateFloatingIP(openStackMachine, openStackCluster, clusterName, floatingIPAddress)
+		// fip has,but not specially one
+		if len(addresses) > 1 {
+			if machine.Annotations["machinedeployment.clusters.x-k8s.io/fip-address"] != "" {
+				if  addresses[1].Address != machine.Annotations["machinedeployment.clusters.x-k8s.io/fip-address"]{
+					needgcfip := addresses[1].Address
+					//gc fip
+					if err = networkingService.DeleteFloatingIP(openStackMachine, needgcfip); err != nil {
+						conditions.MarkFalse(openStackMachine, infrav1.APIServerIngressReadyCondition, infrav1.FloatingIPErrorReason, clusterv1.ConditionSeverityError, "Deleting floating IP failed: %v", err)
+						return ctrl.Result{}, fmt.Errorf("delete floating IP %q: %w", needgcfip, err)
+					}
+				}else{
+					conditions.MarkTrue(openStackMachine, infrav1.APIServerIngressReadyCondition)
+					scope.Logger.Info("Reconciled Machine create successfully")
+					return ctrl.Result{}, nil
+				}
+			}else {
+				conditions.MarkTrue(openStackMachine, infrav1.APIServerIngressReadyCondition)
+				scope.Logger.Info("Reconciled Machine create successfully")
+				return ctrl.Result{}, nil
+			}
+		}
+		fp, err := networkingService.GetOrCreateFloatingIP(openStackMachine, openStackCluster, clusterName, fipAddress)
 		if err != nil {
 			conditions.MarkFalse(openStackMachine, infrav1.APIServerIngressReadyCondition, infrav1.FloatingIPErrorReason, clusterv1.ConditionSeverityError, "Floating IP cannot be obtained or created: %v", err)
-			return ctrl.Result{}, fmt.Errorf("get or create floating IP %q: %w", floatingIPAddress, err)
+			return ctrl.Result{}, nil
 		}
-		port, err := computeService.GetManagementPort(openStackCluster, instanceStatus)
-		if err != nil {
-			conditions.MarkFalse(openStackMachine, infrav1.APIServerIngressReadyCondition, infrav1.FloatingIPErrorReason, clusterv1.ConditionSeverityError, "Obtaining management port for control plane machine failed: %v", err)
-			return ctrl.Result{}, fmt.Errorf("get management port for control plane machine: %w", err)
+		var port = new(networkport.Port)
+		// we should get machine network name if we define network
+		if len(openStackMachine.Spec.Networks) > 0 {
+			nets, err := instanceStatus.NetworkStatus()
+			if err != nil {
+				conditions.MarkFalse(openStackMachine, infrav1.APIServerIngressReadyCondition, infrav1.FloatingIPErrorReason, clusterv1.ConditionSeverityError, "cann't get machine network information: %v", err)
+				return ctrl.Result{}, nil
+			}
+			pos, err := networkingService.GetPortFromInstanceIP(*openStackMachine.Spec.InstanceID, nets.Addresses()[0].Address)
+			if err != nil {
+				conditions.MarkFalse(openStackMachine, infrav1.APIServerIngressReadyCondition, infrav1.FloatingIPErrorReason, clusterv1.ConditionSeverityError, "failed to get machine ports information: %v", err)
+				return ctrl.Result{}, nil
+			}
+			port = &pos[0]
+		} else {
+			conditions.MarkFalse(openStackMachine, infrav1.APIServerIngressReadyCondition, infrav1.FloatingIPErrorReason, clusterv1.ConditionSeverityError, "waiting machine ports Associating: %v", err)
+			return ctrl.Result{}, nil
 		}
-
 		if fp.PortID != "" {
 			scope.Logger.Info("Floating IP already associated to a port:", "id", fp.ID, "fixed ip", fp.FixedIP, "portID", port.ID)
 		} else {
@@ -428,7 +492,17 @@ func (r *OpenStackMachineReconciler) reconcileNormal(ctx context.Context, scope 
 				return ctrl.Result{}, fmt.Errorf("associate floating IP %q with port %q: %w", fp.FloatingIP, port.ID, err)
 			}
 		}
+	}else{
+		for _, address := range addresses {
+			if address.Type == corev1.NodeExternalIP {
+				if err = networkingService.DeleteFloatingIP(openStackCluster, address.Address); err != nil {
+					conditions.MarkFalse(openStackMachine, infrav1.APIServerIngressReadyCondition, infrav1.FloatingIPErrorReason, clusterv1.ConditionSeverityError, "Deleting floating IP failed: %v", err)
+					return ctrl.Result{}, fmt.Errorf("delete floating IP %q: %w", address.Address, err)
+				}
+			}
+		}
 	}
+
 	conditions.MarkTrue(openStackMachine, infrav1.APIServerIngressReadyCondition)
 
 	scope.Logger.Info("Reconciled Machine create successfully")

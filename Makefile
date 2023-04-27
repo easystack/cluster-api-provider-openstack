@@ -78,7 +78,7 @@ endif
 
 # Release variables
 
-STAGING_REGISTRY := gcr.io/k8s-staging-capi-openstack
+STAGING_REGISTRY := hub.easystack.cn/captain
 STAGING_BUCKET ?= artifacts.k8s-staging-capi-openstack.appspot.com
 BUCKET ?= $(STAGING_BUCKET)
 PROD_REGISTRY ?= registry.k8s.io/capi-openstack
@@ -295,7 +295,7 @@ docker-push: ## Push the docker image
 docker-pull-prerequisites:
 	[ "$(PODMAN)" -eq 0 ] && docker pull docker.io/docker/dockerfile:1.1-experimental
 	docker pull docker.io/library/golang:$(GOLANG_VERSION)
-	docker pull gcr.io/distroless/static:latest
+	docker pull gcr.dockerproxy.com/distroless/static:latest
 
 ## --------------------------------------
 ##@ Docker — All ARCH
