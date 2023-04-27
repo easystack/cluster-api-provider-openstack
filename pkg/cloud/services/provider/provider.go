@@ -22,7 +22,7 @@ import (
 	"crypto/x509"
 	"fmt"
 	"net/http"
-
+	"github.com/gophercloud/gophercloud/openstack/identity/v3/extensions/trusts"
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack"
 	"github.com/gophercloud/gophercloud/openstack/identity/v3/tokens"
@@ -42,8 +42,52 @@ const (
 	caSecretKey     = "cacert"
 )
 
+type  NewAuthInfo struct {
+	clientconfig.AuthInfo
+	TrustID string `yaml:"trust_id,omitempty" json:"trust_id,omitempty"`
+}
+
+// NewCloud represents an entry in a clouds.yaml/public-clouds.yaml/secure.yaml file.
+type NewCloud struct {
+	Cloud      string    `yaml:"cloud,omitempty" json:"cloud,omitempty"`
+	Profile    string    `yaml:"profile,omitempty" json:"profile,omitempty"`
+	AuthInfo   *NewAuthInfo `yaml:"auth,omitempty" json:"auth,omitempty"`
+	AuthType   clientconfig.AuthType  `yaml:"auth_type,omitempty" json:"auth_type,omitempty"`
+	RegionName string    `yaml:"region_name,omitempty" json:"region_name,omitempty"`
+	Regions    []clientconfig.Region  `yaml:"regions,omitempty" json:"regions,omitempty"`
+
+	// EndpointType and Interface both specify whether to use the public, internal,
+	// or admin interface of a service. They should be considered synonymous, but
+	// EndpointType will take precedence when both are specified.
+	EndpointType string `yaml:"endpoint_type,omitempty" json:"endpoint_type,omitempty"`
+	Interface    string `yaml:"interface,omitempty" json:"interface,omitempty"`
+
+	// API Version overrides.
+	IdentityAPIVersion string `yaml:"identity_api_version,omitempty" json:"identity_api_version,omitempty"`
+	VolumeAPIVersion   string `yaml:"volume_api_version,omitempty" json:"volume_api_version,omitempty"`
+
+	// Verify whether or not SSL API requests should be verified.
+	Verify *bool `yaml:"verify,omitempty" json:"verify,omitempty"`
+
+	// CACertFile a path to a CA Cert bundle that can be used as part of
+	// verifying SSL API requests.
+	CACertFile string `yaml:"cacert,omitempty" json:"cacert,omitempty"`
+
+	// ClientCertFile a path to a client certificate to use as part of the SSL
+	// transaction.
+	ClientCertFile string `yaml:"cert,omitempty" json:"cert,omitempty"`
+
+	// ClientKeyFile a path to a client key to use as part of the SSL
+	// transaction.
+	ClientKeyFile string `yaml:"key,omitempty" json:"key,omitempty"`
+}
+
+type NewClouds struct {
+	Clouds map[string]NewCloud `yaml:"clouds" json:"clouds"`
+}
+
 func NewClientFromMachine(ctx context.Context, ctrlClient client.Client, openStackMachine *infrav1.OpenStackMachine) (*gophercloud.ProviderClient, *clientconfig.ClientOpts, string, error) {
-	var cloud clientconfig.Cloud
+	var cloud NewCloud
 	var caCert []byte
 
 	if openStackMachine.Spec.IdentityRef != nil {
@@ -57,7 +101,7 @@ func NewClientFromMachine(ctx context.Context, ctrlClient client.Client, openSta
 }
 
 func NewClientFromCluster(ctx context.Context, ctrlClient client.Client, openStackCluster *infrav1.OpenStackCluster) (*gophercloud.ProviderClient, *clientconfig.ClientOpts, string, error) {
-	var cloud clientconfig.Cloud
+	var cloud NewCloud
 	var caCert []byte
 
 	if openStackCluster.Spec.IdentityRef != nil {
@@ -70,10 +114,10 @@ func NewClientFromCluster(ctx context.Context, ctrlClient client.Client, openSta
 	return NewClient(cloud, caCert)
 }
 
-func NewClient(cloud clientconfig.Cloud, caCert []byte) (*gophercloud.ProviderClient, *clientconfig.ClientOpts, string, error) {
+func NewClient(cloud NewCloud, caCert []byte) (*gophercloud.ProviderClient, *clientconfig.ClientOpts, string, error) {
 	clientOpts := new(clientconfig.ClientOpts)
 	if cloud.AuthInfo != nil {
-		clientOpts.AuthInfo = cloud.AuthInfo
+		clientOpts.AuthInfo = &cloud.AuthInfo.AuthInfo
 		clientOpts.AuthType = cloud.AuthType
 		clientOpts.RegionName = cloud.RegionName
 	}
@@ -101,11 +145,41 @@ func NewClient(cloud clientconfig.Cloud, caCert []byte) (*gophercloud.ProviderCl
 	}
 
 	provider.HTTPClient.Transport = &http.Transport{Proxy: http.ProxyFromEnvironment, TLSClientConfig: config}
-	if klog.V(6).Enabled() {
-		provider.HTTPClient.Transport = &osclient.RoundTripper{
-			Rt:     provider.HTTPClient.Transport,
-			Logger: &defaultLogger{},
+	provider.HTTPClient.Transport = &osclient.RoundTripper{
+		Rt:     provider.HTTPClient.Transport,
+		Logger: &defaultLogger{},
+	}
+	if cloud.AuthInfo.TrustID!="" {
+		tokenauth:=tokens.AuthOptions{}
+		tokenauth.IdentityEndpoint=opts.IdentityEndpoint
+		tokenauth.UserID=opts.UserID
+		tokenauth.Username=opts.Username
+		tokenauth.Password=opts.Password
+		tokenauth.DomainID=opts.DomainID
+		tokenauth.DomainName=opts.DomainName
+		tokenauth.ApplicationCredentialID=opts.ApplicationCredentialID
+		tokenauth.ApplicationCredentialName=opts.ApplicationCredentialName
+		tokenauth.ApplicationCredentialSecret=opts.ApplicationCredentialSecret
+		tokenauth.AllowReauth=opts.AllowReauth
+		if opts.Scope!=nil {
+			tokenauth.Scope.ProjectID=opts.Scope.ProjectID
+			tokenauth.Scope.ProjectName=opts.Scope.ProjectName
+			tokenauth.Scope.DomainName=opts.Scope.DomainName
+			tokenauth.Scope.DomainID=opts.Scope.DomainID
 		}
+		authOptsExt := trusts.AuthOptsExt{
+			TrustID:            cloud.AuthInfo.TrustID,
+			AuthOptionsBuilder: &tokenauth,
+		}
+		err = openstack.AuthenticateV3(provider, authOptsExt, gophercloud.EndpointOpts{})
+		if err != nil {
+			return nil, nil, "", fmt.Errorf("providerClient authentication err: %v", err)
+		}
+		projectID, err := getProjectIDFromAuthResult(provider.GetAuthResult())
+		if err != nil {
+			return nil, nil, "", err
+		}
+		return provider,clientOpts,projectID,nil
 	}
 	err = openstack.Authenticate(provider, *opts)
 	if err != nil {
@@ -128,8 +202,8 @@ func (defaultLogger) Printf(format string, args ...interface{}) {
 }
 
 // getCloudFromSecret extract a Cloud from the given namespace:secretName.
-func getCloudFromSecret(ctx context.Context, ctrlClient client.Client, secretNamespace string, secretName string, cloudName string) (clientconfig.Cloud, []byte, error) {
-	emptyCloud := clientconfig.Cloud{}
+func getCloudFromSecret(ctx context.Context, ctrlClient client.Client, secretNamespace string, secretName string, cloudName string) (NewCloud, []byte, error) {
+	emptyCloud := NewCloud{}
 
 	if secretName == "" {
 		return emptyCloud, nil, nil
@@ -153,7 +227,7 @@ func getCloudFromSecret(ctx context.Context, ctrlClient client.Client, secretNam
 		return emptyCloud, nil, fmt.Errorf("OpenStack credentials secret %v did not contain key %v",
 			secretName, cloudsSecretKey)
 	}
-	var clouds clientconfig.Clouds
+	var clouds NewClouds
 	if err = yaml.Unmarshal(content, &clouds); err != nil {
 		return emptyCloud, nil, fmt.Errorf("failed to unmarshal clouds credentials stored in secret %v: %v", secretName, err)
 	}
