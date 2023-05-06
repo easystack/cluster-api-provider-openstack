@@ -75,6 +75,17 @@ func NewComputeClient(scope *scope.Scope) (ComputeClient, error) {
 	return &computeClient{compute}, nil
 }
 
+func GetGopherClient(scope *scope.Scope)(*gophercloud.ServiceClient,error)  {
+	compute, err := openstack.NewComputeV2(scope.ProviderClient, gophercloud.EndpointOpts{
+		Region: scope.ProviderClientOpts.RegionName,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to create compute service client: %v", err)
+	}
+	compute.Microversion = NovaMinimumMicroversion
+	return compute,nil
+}
+
 func (c computeClient) ListAvailabilityZones() ([]availabilityzones.AvailabilityZone, error) {
 	mc := metrics.NewMetricPrometheusContext("availability_zone", "list")
 	allPages, err := availabilityzones.List(c.client).AllPages()

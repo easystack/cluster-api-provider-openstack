@@ -18,6 +18,7 @@ package compute
 
 import (
 	"fmt"
+	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/volumeattach"
 	"os"
 	"strconv"
 	"time"
@@ -205,6 +206,11 @@ func (s *Service) createInstanceImpl(eventObject runtime.Object, openStackCluste
 		return nil, fmt.Errorf("error in get or create root volume: %w", err)
 	}
 
+	volumes, err := s.getOrCreateCustomeVolumes(eventObject, instanceSpec)
+	if err != nil {
+		return nil, fmt.Errorf("error in get or create custome volume: %w", err)
+	}
+
 	instanceCreateTimeout := getTimeout("CLUSTER_API_OPENSTACK_INSTANCE_CREATE_TIMEOUT", timeoutInstanceCreate)
 	instanceCreateTimeout *= time.Minute
 
@@ -230,6 +236,35 @@ func (s *Service) createInstanceImpl(eventObject runtime.Object, openStackCluste
 		})
 		if err != nil {
 			return nil, fmt.Errorf("volume %s did not become available: %w", volume.ID, err)
+		}
+	}
+	// Wait for custome volume become available
+	if volumes != nil {
+		for _, vo := range volumes {
+			if vo == nil {
+				continue
+			}
+			err = util.PollImmediate(retryIntervalInstanceStatus, instanceCreateTimeout, func() (bool, error) {
+				createdVolume, err := s.getVolumeClient().GetVolume(vo.ID)
+				if err != nil {
+					if capoerrors.IsRetryable(err) {
+						return false, nil
+					}
+					return false, err
+				}
+
+				switch createdVolume.Status {
+				case "available":
+					return true, nil
+				case "error":
+					return false, fmt.Errorf("volume %s is in error state", vo.ID)
+				default:
+					return false, nil
+				}
+			})
+			if err != nil {
+				return nil, fmt.Errorf("volume %s did not become available: %w", vo.ID, err)
+			}
 		}
 	}
 
@@ -284,7 +319,38 @@ func (s *Service) createInstanceImpl(eventObject runtime.Object, openStackCluste
 	}
 
 	record.Eventf(eventObject, "SuccessfulCreateServer", "Created server %s with id %s", createdInstance.Name(), createdInstance.ID())
+
+	//add custome data volume attach
+	// if err happened,return error
+	for index, volume := range volumes {
+		num,err := Devicename(index)
+		if err!=nil {
+			record.Eventf(eventObject, "FailedAttachDataVolume", "too long Attach  server %s with volume  %s", createdInstance.Name(), volume.ID)
+			return nil,err
+		}
+		createOpts := volumeattach.CreateOpts{
+			Device:   fmt.Sprintf("/dev/vd%s",num),
+			VolumeID: volume.ID,
+		}
+		_, err = volumeattach.Create(s.getGopherClient(), createdInstance.ID(), createOpts).Extract()
+		if err != nil {
+			record.Eventf(eventObject, "FailedAttachDataVolume", "Attach  server %s with volume  %s error", createdInstance.Name(), volume.ID)
+			return nil,err
+		}
+	}
 	return createdInstance, nil
+}
+func Devicename(index int)  (string,error) {
+	//定义一个字符 变量a 是一个byte类型的 表示单个字符
+	if index >= 26 {
+		return "",fmt.Errorf("%s","too much attach device")
+	}
+	var a = 'a'
+	//生成26个字符
+	for i := 1; i <= index; i++ {
+		a++
+	}
+	return string(a),nil
 }
 
 // getPortName appends a suffix to an instance name in order to try and get a unique name per port.
@@ -365,6 +431,57 @@ func (s *Service) getOrCreateRootVolume(eventObject runtime.Object, instanceSpec
 	}
 	record.Eventf(eventObject, "SuccessfulCreateVolume", "Created root volume; id=%s", volume.ID)
 	return volume, err
+}
+
+func (s *Service) getOrCreateCustomeVolumes(eventObject runtime.Object, instanceSpec *InstanceSpec) ([]*volumes.Volume, error) {
+	cvs := instanceSpec.CustomeVolumes
+	var result = make([]*volumes.Volume,0,3)
+	for index, vo := range cvs {
+		if !hasRootVolume(vo) {
+			continue
+		}
+		s.scope.Logger.Info("prepare to create a volume")
+
+		name := fmt.Sprintf("%s-custome-%d", instanceSpec.Name, index)
+		size := vo.Size
+
+		volume, err := s.getVolumeByName(name)
+		if err != nil {
+			return nil, err
+		}
+		if volume != nil {
+			if volume.Size != size {
+				return nil, fmt.Errorf("exected to find volume %s with size %d; found size %d", name, size, volume.Size)
+			}
+
+			s.scope.Logger.Info("using existing custome volume %s", name)
+			result = append(result, volume)
+			continue
+		}
+
+		availabilityZone := instanceSpec.FailureDomain
+		if vo.AvailabilityZone != "" {
+			availabilityZone = vo.AvailabilityZone
+		}
+
+		createOpts := volumes.CreateOpts{
+			Size:             vo.Size,
+			Description:      fmt.Sprintf("Custome volume for %s", instanceSpec.Name),
+			Name:             name,
+			Multiattach:      false,
+			AvailabilityZone: availabilityZone,
+			VolumeType:       vo.VolumeType,
+		}
+
+		volume, err = s.getVolumeClient().CreateVolume(createOpts)
+		if err != nil {
+			record.Eventf(eventObject, "FailedCreateVolume", "Failed to create custome volume; size=%d  err=%v", size, err)
+			return nil, err
+		}
+		result = append(result, volume)
+		record.Eventf(eventObject, "SuccessfulCreateVolume", "Created root custome; id=%s", volume.ID)
+	}
+	return result, nil
 }
 
 // applyRootVolume sets a root volume if the root volume Size is not 0.

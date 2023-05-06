@@ -18,6 +18,7 @@ package compute
 
 import (
 	"fmt"
+	"github.com/gophercloud/gophercloud"
 
 	"sigs.k8s.io/cluster-api-provider-openstack/pkg/clients"
 	"sigs.k8s.io/cluster-api-provider-openstack/pkg/cloud/services/networking"
@@ -41,6 +42,14 @@ func NewService(scope *scope.Scope) (*Service, error) {
 	return &Service{
 		scope: scope,
 	}, nil
+}
+
+func (s Service) getGopherClient() *gophercloud.ServiceClient  {
+	computeClient, err := clients.GetGopherClient(s.scope)
+	if err != nil {
+		return nil
+	}
+	return computeClient
 }
 
 func (s Service) getComputeClient() clients.ComputeClient {

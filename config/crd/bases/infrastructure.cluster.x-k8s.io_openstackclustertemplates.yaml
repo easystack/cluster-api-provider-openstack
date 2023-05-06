@@ -4,6 +4,11 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.10.0
+  labels:
+    cluster.x-k8s.io/provider: infrastructure-openstack
+    cluster.x-k8s.io/v1alpha3: v1alpha3
+    cluster.x-k8s.io/v1beta1: v1alpha4_v1alpha5_v1alpha6
+    clusterctl.cluster.x-k8s.io: ""
   creationTimestamp: null
   name: openstackclustertemplates.infrastructure.cluster.x-k8s.io
 spec:
@@ -1533,6 +1538,18 @@ spec:
                               configDrive:
                                 description: Config Drive support
                                 type: boolean
+                              customeVolumes:
+                                description: The custome metadata to boot from
+                                items:
+                                  properties:
+                                    availabilityZone:
+                                      type: string
+                                    diskSize:
+                                      type: integer
+                                    volumeType:
+                                      type: string
+                                  type: object
+                                type: array
                               flavor:
                                 description: The flavor reference for the flavor for
                                   your server instance.

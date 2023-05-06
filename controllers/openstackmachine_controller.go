@@ -539,6 +539,7 @@ func machineToInstanceSpec(openStackCluster *infrav1.OpenStackCluster, machine *
 		Metadata:      openStackMachine.Spec.ServerMetadata,
 		ConfigDrive:   openStackMachine.Spec.ConfigDrive != nil && *openStackMachine.Spec.ConfigDrive,
 		RootVolume:    openStackMachine.Spec.RootVolume,
+		CustomeVolumes: openStackMachine.Spec.CustomeVolumes,
 		Subnet:        openStackMachine.Spec.Subnet,
 		ServerGroupID: openStackMachine.Spec.ServerGroupID,
 		Trunk:         openStackMachine.Spec.Trunk,
