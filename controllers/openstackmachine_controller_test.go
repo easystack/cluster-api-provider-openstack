@@ -24,8 +24,8 @@ import (
 	"k8s.io/utils/pointer"
 	clusterv1 "sigs.k8s.io/cluster-api/api/v1beta1"
 
-	infrav1 "sigs.k8s.io/cluster-api-provider-openstack/api/v1alpha6"
-	"sigs.k8s.io/cluster-api-provider-openstack/pkg/cloud/services/compute"
+	infrav1 "easystack.com/cluster-api-provider-openstack/api/v1alpha6"
+	"easystack.com/cluster-api-provider-openstack/pkg/cloud/services/compute"
 )
 
 const (

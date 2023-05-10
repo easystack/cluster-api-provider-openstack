@@ -32,8 +32,8 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/ports"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/subnets"
 
-	"sigs.k8s.io/cluster-api-provider-openstack/pkg/metrics"
-	"sigs.k8s.io/cluster-api-provider-openstack/pkg/scope"
+	"easystack.com/cluster-api-provider-openstack/pkg/metrics"
+	"easystack.com/cluster-api-provider-openstack/pkg/scope"
 )
 
 type NetworkClient interface {

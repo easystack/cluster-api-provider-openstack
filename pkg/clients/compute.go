@@ -26,8 +26,8 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
 	"github.com/gophercloud/utils/openstack/compute/v2/flavors"
 
-	"sigs.k8s.io/cluster-api-provider-openstack/pkg/metrics"
-	"sigs.k8s.io/cluster-api-provider-openstack/pkg/scope"
+	"easystack.com/cluster-api-provider-openstack/pkg/metrics"
+	"easystack.com/cluster-api-provider-openstack/pkg/scope"
 )
 
 /*

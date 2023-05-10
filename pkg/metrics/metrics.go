@@ -23,7 +23,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"sigs.k8s.io/controller-runtime/pkg/metrics"
 
-	capoerrors "sigs.k8s.io/cluster-api-provider-openstack/pkg/utils/errors"
+	capoerrors "easystack.com/cluster-api-provider-openstack/pkg/utils/errors"
 )
 
 type OpenstackPrometheusMetrics struct {

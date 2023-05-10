@@ -25,10 +25,10 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/networks"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/subnets"
 
-	infrav1 "sigs.k8s.io/cluster-api-provider-openstack/api/v1alpha6"
-	"sigs.k8s.io/cluster-api-provider-openstack/pkg/metrics"
-	"sigs.k8s.io/cluster-api-provider-openstack/pkg/record"
-	"sigs.k8s.io/cluster-api-provider-openstack/pkg/utils/names"
+	infrav1 "easystack.com/cluster-api-provider-openstack/api/v1alpha6"
+	"easystack.com/cluster-api-provider-openstack/pkg/metrics"
+	"easystack.com/cluster-api-provider-openstack/pkg/record"
+	"easystack.com/cluster-api-provider-openstack/pkg/utils/names"
 )
 
 type createOpts struct {

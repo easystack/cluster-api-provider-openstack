@@ -28,9 +28,9 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/pools"
 	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/providers"
 
-	"sigs.k8s.io/cluster-api-provider-openstack/pkg/metrics"
-	"sigs.k8s.io/cluster-api-provider-openstack/pkg/scope"
-	capoerrors "sigs.k8s.io/cluster-api-provider-openstack/pkg/utils/errors"
+	"easystack.com/cluster-api-provider-openstack/pkg/metrics"
+	"easystack.com/cluster-api-provider-openstack/pkg/scope"
+	capoerrors "easystack.com/cluster-api-provider-openstack/pkg/utils/errors"
 )
 
 type LbClient interface {

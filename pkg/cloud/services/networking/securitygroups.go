@@ -23,8 +23,8 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/groups"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/rules"
 
-	infrav1 "sigs.k8s.io/cluster-api-provider-openstack/api/v1alpha6"
-	"sigs.k8s.io/cluster-api-provider-openstack/pkg/record"
+	infrav1 "easystack.com/cluster-api-provider-openstack/api/v1alpha6"
+	"easystack.com/cluster-api-provider-openstack/pkg/record"
 )
 
 const (

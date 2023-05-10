@@ -29,9 +29,9 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/providers"
 	. "github.com/onsi/gomega"
 
-	infrav1 "sigs.k8s.io/cluster-api-provider-openstack/api/v1alpha6"
-	"sigs.k8s.io/cluster-api-provider-openstack/pkg/clients/mock"
-	"sigs.k8s.io/cluster-api-provider-openstack/pkg/cloud/services/networking"
+	infrav1 "easystack.com/cluster-api-provider-openstack/api/v1alpha6"
+	"easystack.com/cluster-api-provider-openstack/pkg/clients/mock"
+	"easystack.com/cluster-api-provider-openstack/pkg/cloud/services/networking"
 )
 
 func Test_ReconcileLoadBalancer(t *testing.T) {

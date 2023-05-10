@@ -24,9 +24,9 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/cluster-api/util"
 
-	"sigs.k8s.io/cluster-api-provider-openstack/pkg/record"
-	capoerrors "sigs.k8s.io/cluster-api-provider-openstack/pkg/utils/errors"
-	"sigs.k8s.io/cluster-api-provider-openstack/pkg/utils/names"
+	"easystack.com/cluster-api-provider-openstack/pkg/record"
+	capoerrors "easystack.com/cluster-api-provider-openstack/pkg/utils/errors"
+	"easystack.com/cluster-api-provider-openstack/pkg/utils/names"
 )
 
 const (

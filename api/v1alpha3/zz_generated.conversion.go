@@ -27,7 +27,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 	conversion "k8s.io/apimachinery/pkg/conversion"
 	runtime "k8s.io/apimachinery/pkg/runtime"
-	v1alpha6 "sigs.k8s.io/cluster-api-provider-openstack/api/v1alpha6"
+	v1alpha6 "easystack.com/cluster-api-provider-openstack/api/v1alpha6"
 	apiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
 	v1beta1 "sigs.k8s.io/cluster-api/api/v1beta1"
 	errors "sigs.k8s.io/cluster-api/errors"

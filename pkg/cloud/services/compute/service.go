@@ -20,9 +20,9 @@ import (
 	"fmt"
 	"github.com/gophercloud/gophercloud"
 
-	"sigs.k8s.io/cluster-api-provider-openstack/pkg/clients"
-	"sigs.k8s.io/cluster-api-provider-openstack/pkg/cloud/services/networking"
-	"sigs.k8s.io/cluster-api-provider-openstack/pkg/scope"
+	"easystack.com/cluster-api-provider-openstack/pkg/clients"
+	"easystack.com/cluster-api-provider-openstack/pkg/cloud/services/networking"
+	"easystack.com/cluster-api-provider-openstack/pkg/scope"
 )
 
 type Service struct {

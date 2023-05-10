@@ -39,14 +39,14 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 
-	infrav1alpha3 "sigs.k8s.io/cluster-api-provider-openstack/api/v1alpha3"
-	infrav1alpha4 "sigs.k8s.io/cluster-api-provider-openstack/api/v1alpha4"
-	infrav1alpha5 "sigs.k8s.io/cluster-api-provider-openstack/api/v1alpha5"
-	infrav1 "sigs.k8s.io/cluster-api-provider-openstack/api/v1alpha6"
-	"sigs.k8s.io/cluster-api-provider-openstack/controllers"
-	"sigs.k8s.io/cluster-api-provider-openstack/pkg/metrics"
-	"sigs.k8s.io/cluster-api-provider-openstack/pkg/record"
-	"sigs.k8s.io/cluster-api-provider-openstack/version"
+	infrav1alpha3 "easystack.com/cluster-api-provider-openstack/api/v1alpha3"
+	infrav1alpha4 "easystack.com/cluster-api-provider-openstack/api/v1alpha4"
+	infrav1alpha5 "easystack.com/cluster-api-provider-openstack/api/v1alpha5"
+	infrav1 "easystack.com/cluster-api-provider-openstack/api/v1alpha6"
+	"easystack.com/cluster-api-provider-openstack/controllers"
+	"easystack.com/cluster-api-provider-openstack/pkg/metrics"
+	"easystack.com/cluster-api-provider-openstack/pkg/record"
+	"easystack.com/cluster-api-provider-openstack/version"
 )
 
 var (

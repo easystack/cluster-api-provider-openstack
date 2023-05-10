@@ -1,4 +1,4 @@
-module sigs.k8s.io/cluster-api-provider-openstack
+module easystack.com/cluster-api-provider-openstack
 
 go 1.19
 

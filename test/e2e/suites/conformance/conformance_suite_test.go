@@ -25,7 +25,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	"sigs.k8s.io/cluster-api-provider-openstack/test/e2e/shared"
+	"easystack.com/cluster-api-provider-openstack/test/e2e/shared"
 )
 
 var e2eCtx *shared.E2EContext
