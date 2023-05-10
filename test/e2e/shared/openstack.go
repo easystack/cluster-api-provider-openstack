@@ -50,10 +50,10 @@ import (
 	"gopkg.in/ini.v1"
 	"sigs.k8s.io/yaml"
 
-	infrav1 "easystack.com/cluster-api-provider-openstack/api/v1alpha6"
-	"easystack.com/cluster-api-provider-openstack/pkg/clients"
-	"easystack.com/cluster-api-provider-openstack/pkg/cloud/services/compute"
-	"easystack.com/cluster-api-provider-openstack/pkg/cloud/services/provider"
+	infrav1 "github.com/easystack/cluster-api-provider-openstack/api/v1alpha6"
+	"github.com/easystack/cluster-api-provider-openstack/pkg/clients"
+	"github.com/easystack/cluster-api-provider-openstack/pkg/cloud/services/compute"
+	"github.com/easystack/cluster-api-provider-openstack/pkg/cloud/services/provider"
 )
 
 type ServerExtWithIP struct {

@@ -36,7 +36,7 @@ import (
 	"sigs.k8s.io/cluster-api/util"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	infrav1 "easystack.com/cluster-api-provider-openstack/api/v1alpha6"
+	infrav1 "github.com/easystack/cluster-api-provider-openstack/api/v1alpha6"
 )
 
 func SetupSpecNamespace(ctx context.Context, specName string, e2eCtx *E2EContext) *corev1.Namespace {

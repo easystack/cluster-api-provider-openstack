@@ -21,7 +21,6 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/floatingips"
 	"reflect"
 	"time"
 
@@ -50,12 +49,12 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
-	infrav1 "easystack.com/cluster-api-provider-openstack/api/v1alpha6"
-	"easystack.com/cluster-api-provider-openstack/pkg/cloud/services/compute"
-	"easystack.com/cluster-api-provider-openstack/pkg/cloud/services/loadbalancer"
-	"easystack.com/cluster-api-provider-openstack/pkg/cloud/services/networking"
-	"easystack.com/cluster-api-provider-openstack/pkg/cloud/services/provider"
-	"easystack.com/cluster-api-provider-openstack/pkg/scope"
+	infrav1 "github.com/easystack/cluster-api-provider-openstack/api/v1alpha6"
+	"github.com/easystack/cluster-api-provider-openstack/pkg/cloud/services/compute"
+	"github.com/easystack/cluster-api-provider-openstack/pkg/cloud/services/loadbalancer"
+	"github.com/easystack/cluster-api-provider-openstack/pkg/cloud/services/networking"
+	"github.com/easystack/cluster-api-provider-openstack/pkg/cloud/services/provider"
+	"github.com/easystack/cluster-api-provider-openstack/pkg/scope"
 	networkport "github.com/gophercloud/gophercloud/openstack/networking/v2/ports"
 )
 

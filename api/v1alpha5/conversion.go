@@ -21,7 +21,7 @@ import (
 	utilconversion "sigs.k8s.io/cluster-api/util/conversion"
 	ctrlconversion "sigs.k8s.io/controller-runtime/pkg/conversion"
 
-	infrav1 "easystack.com/cluster-api-provider-openstack/api/v1alpha6"
+	infrav1 "github.com/easystack/cluster-api-provider-openstack/api/v1alpha6"
 )
 
 var _ ctrlconversion.Convertible = &OpenStackCluster{}

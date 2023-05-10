@@ -1,4 +1,4 @@
-module easystack.com/cluster-api-provider-openstack
+module github.com/easystack/cluster-api-provider-openstack
 
 go 1.19
 

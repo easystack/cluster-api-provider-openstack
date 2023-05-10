@@ -17,7 +17,7 @@ limitations under the License.
 package networking
 
 import (
-	infrav1 "easystack.com/cluster-api-provider-openstack/api/v1alpha6"
+	infrav1 "github.com/easystack/cluster-api-provider-openstack/api/v1alpha6"
 )
 
 var defaultRules = []infrav1.SecurityGroupRule{

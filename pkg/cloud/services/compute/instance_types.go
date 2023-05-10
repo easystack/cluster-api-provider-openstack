@@ -24,8 +24,8 @@ import (
 	"github.com/go-logr/logr"
 	corev1 "k8s.io/api/core/v1"
 
-	infrav1 "easystack.com/cluster-api-provider-openstack/api/v1alpha6"
-	"easystack.com/cluster-api-provider-openstack/pkg/clients"
+	infrav1 "github.com/easystack/cluster-api-provider-openstack/api/v1alpha6"
+	"github.com/easystack/cluster-api-provider-openstack/pkg/clients"
 )
 
 // InstanceSpec defines the fields which can be set on a new OpenStack instance.

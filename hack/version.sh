@@ -85,7 +85,7 @@ version::ldflags() {
         local key=${1}
         local val=${2}
         ldflags+=(
-            "-X 'easystack.com/cluster-api-provider-openstack/version.${key}=${val}'"
+            "-X 'github.com/easystack/cluster-api-provider-openstack/version.${key}=${val}'"
         )
     }
 

@@ -55,9 +55,9 @@ import (
 	"sigs.k8s.io/cluster-api/test/framework/clusterctl"
 	crclient "sigs.k8s.io/controller-runtime/pkg/client"
 
-	infrav1 "easystack.com/cluster-api-provider-openstack/api/v1alpha6"
-	capoerrors "easystack.com/cluster-api-provider-openstack/pkg/utils/errors"
-	"easystack.com/cluster-api-provider-openstack/test/e2e/shared"
+	infrav1 "github.com/easystack/cluster-api-provider-openstack/api/v1alpha6"
+	capoerrors "github.com/easystack/cluster-api-provider-openstack/pkg/utils/errors"
+	"github.com/easystack/cluster-api-provider-openstack/test/e2e/shared"
 )
 
 const specName = "e2e"

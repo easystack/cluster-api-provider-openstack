@@ -23,8 +23,8 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/trunks"
 	. "github.com/onsi/gomega"
 
-	infrav1 "easystack.com/cluster-api-provider-openstack/api/v1alpha6"
-	"easystack.com/cluster-api-provider-openstack/pkg/clients/mock"
+	infrav1 "github.com/easystack/cluster-api-provider-openstack/api/v1alpha6"
+	"github.com/easystack/cluster-api-provider-openstack/pkg/clients/mock"
 )
 
 func Test_GetOrCreateTrunk(t *testing.T) {

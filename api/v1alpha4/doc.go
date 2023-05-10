@@ -14,5 +14,5 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// +k8s:conversion-gen=easystack.com/cluster-api-provider-openstack/api/v1alpha6
+// +k8s:conversion-gen=github.com/easystack/cluster-api-provider-openstack/api/v1alpha6
 package v1alpha4

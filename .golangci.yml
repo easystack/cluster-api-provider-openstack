@@ -56,7 +56,7 @@ linters-settings:
     # TODO(sbuerin) fix remaining findings and set to 20 afterwards
     max-complexity: 30
   gci:
-    local-prefixes: easystack.com/cluster-api-provider-openstack
+    local-prefixes: github.com/easystack/cluster-api-provider-openstack
   gocritic:
     enabled-tags:
       - diagnostic
@@ -96,15 +96,15 @@ linters-settings:
       - pkg: sigs.k8s.io/controller-runtime
         alias: ctrl
       # CAPO
-      - pkg: easystack.com/cluster-api-provider-openstack/api/v1alpha3
+      - pkg: github.com/easystack/cluster-api-provider-openstack/api/v1alpha3
         alias: infrav1alpha3
-      - pkg: easystack.com/cluster-api-provider-openstack/api/v1alpha4
+      - pkg: github.com/easystack/cluster-api-provider-openstack/api/v1alpha4
         alias: infrav1alpha4
-      - pkg: easystack.com/cluster-api-provider-openstack/api/v1alpha5
+      - pkg: github.com/easystack/cluster-api-provider-openstack/api/v1alpha5
         alias: infrav1alpha5
-      - pkg: easystack.com/cluster-api-provider-openstack/api/v1alpha6
+      - pkg: github.com/easystack/cluster-api-provider-openstack/api/v1alpha6
         alias: infrav1
-      - pkg: easystack.com/cluster-api-provider-openstack/pkg/utils/errors
+      - pkg: github.com/easystack/cluster-api-provider-openstack/pkg/utils/errors
         alias: capoerrors
       # CAPI
       - pkg: sigs.k8s.io/cluster-api/api/v1alpha3

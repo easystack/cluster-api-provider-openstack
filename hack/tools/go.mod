@@ -1,4 +1,4 @@
-module easystack.com/cluster-api-provider-openstack/hack/tools
+module github.com/easystack/cluster-api-provider-openstack/hack/tools
 
 go 1.19
 

@@ -23,8 +23,8 @@ import (
 	"github.com/gophercloud/gophercloud/openstack"
 	"github.com/gophercloud/gophercloud/openstack/imageservice/v2/images"
 
-	"easystack.com/cluster-api-provider-openstack/pkg/metrics"
-	"easystack.com/cluster-api-provider-openstack/pkg/scope"
+	"github.com/easystack/cluster-api-provider-openstack/pkg/metrics"
+	"github.com/easystack/cluster-api-provider-openstack/pkg/scope"
 )
 
 type ImageClient interface {

@@ -43,11 +43,11 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/utils/pointer"
 
-	infrav1 "easystack.com/cluster-api-provider-openstack/api/v1alpha6"
-	"easystack.com/cluster-api-provider-openstack/pkg/clients"
-	"easystack.com/cluster-api-provider-openstack/pkg/clients/mock"
-	"easystack.com/cluster-api-provider-openstack/pkg/cloud/services/networking"
-	"easystack.com/cluster-api-provider-openstack/pkg/scope"
+	infrav1 "github.com/easystack/cluster-api-provider-openstack/api/v1alpha6"
+	"github.com/easystack/cluster-api-provider-openstack/pkg/clients"
+	"github.com/easystack/cluster-api-provider-openstack/pkg/clients/mock"
+	"github.com/easystack/cluster-api-provider-openstack/pkg/cloud/services/networking"
+	"github.com/easystack/cluster-api-provider-openstack/pkg/scope"
 )
 
 type gomegaMockMatcher struct {

@@ -7,7 +7,7 @@ title = "Kubernetes Cluster API Provider OpenStack"
 
 [output.html]
 curly-quotes = true
-git-repository-url = "https://easystack.com/cluster-api-provider-openstack"
+git-repository-url = "https://github.com/easystack/cluster-api-provider-openstack"
 
 [preprocessor.tabulate]
 command = "mdbook-tabulate"

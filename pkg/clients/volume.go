@@ -23,8 +23,8 @@ import (
 	"github.com/gophercloud/gophercloud/openstack"
 	"github.com/gophercloud/gophercloud/openstack/blockstorage/v3/volumes"
 
-	"easystack.com/cluster-api-provider-openstack/pkg/metrics"
-	"easystack.com/cluster-api-provider-openstack/pkg/scope"
+	"github.com/easystack/cluster-api-provider-openstack/pkg/metrics"
+	"github.com/easystack/cluster-api-provider-openstack/pkg/scope"
 )
 
 type VolumeClient interface {

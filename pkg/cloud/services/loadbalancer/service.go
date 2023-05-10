@@ -21,9 +21,9 @@ import (
 
 	"github.com/go-logr/logr"
 
-	"easystack.com/cluster-api-provider-openstack/pkg/clients"
-	"easystack.com/cluster-api-provider-openstack/pkg/cloud/services/networking"
-	"easystack.com/cluster-api-provider-openstack/pkg/scope"
+	"github.com/easystack/cluster-api-provider-openstack/pkg/clients"
+	"github.com/easystack/cluster-api-provider-openstack/pkg/cloud/services/networking"
+	"github.com/easystack/cluster-api-provider-openstack/pkg/scope"
 )
 
 // Service interfaces with the OpenStack Neutron LBaaS v2 API.

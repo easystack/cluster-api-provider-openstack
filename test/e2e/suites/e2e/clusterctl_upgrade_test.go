@@ -25,7 +25,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	capi_e2e "sigs.k8s.io/cluster-api/test/e2e"
 
-	"easystack.com/cluster-api-provider-openstack/test/e2e/shared"
+	"github.com/easystack/cluster-api-provider-openstack/test/e2e/shared"
 )
 
 // Note: There isn't really anything fixing this to the v0.6 release. The test will

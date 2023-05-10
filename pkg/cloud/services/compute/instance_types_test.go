@@ -23,7 +23,7 @@ import (
 	. "github.com/onsi/gomega"
 	corev1 "k8s.io/api/core/v1"
 
-	"easystack.com/cluster-api-provider-openstack/pkg/clients"
+	"github.com/easystack/cluster-api-provider-openstack/pkg/clients"
 )
 
 // Some arbitrary MAC addresses.

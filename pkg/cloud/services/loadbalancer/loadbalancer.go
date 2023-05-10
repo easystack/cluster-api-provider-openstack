@@ -31,12 +31,12 @@ import (
 	clusterv1 "sigs.k8s.io/cluster-api/api/v1beta1"
 	"sigs.k8s.io/cluster-api/util"
 
-	infrav1 "easystack.com/cluster-api-provider-openstack/api/v1alpha6"
-	"easystack.com/cluster-api-provider-openstack/pkg/record"
-	capoerrors "easystack.com/cluster-api-provider-openstack/pkg/utils/errors"
-	"easystack.com/cluster-api-provider-openstack/pkg/utils/names"
-	openstackutil "easystack.com/cluster-api-provider-openstack/pkg/utils/openstack"
-	capostrings "easystack.com/cluster-api-provider-openstack/pkg/utils/strings"
+	infrav1 "github.com/easystack/cluster-api-provider-openstack/api/v1alpha6"
+	"github.com/easystack/cluster-api-provider-openstack/pkg/record"
+	capoerrors "github.com/easystack/cluster-api-provider-openstack/pkg/utils/errors"
+	"github.com/easystack/cluster-api-provider-openstack/pkg/utils/names"
+	openstackutil "github.com/easystack/cluster-api-provider-openstack/pkg/utils/openstack"
+	capostrings "github.com/easystack/cluster-api-provider-openstack/pkg/utils/strings"
 )
 
 const (
