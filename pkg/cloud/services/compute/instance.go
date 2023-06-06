@@ -662,38 +662,39 @@ func (s *Service) GetManagementPort(openStackCluster *infrav1.OpenStackCluster, 
 }
 
 func (s *Service) DeleteInstance(eventObject runtime.Object, instanceStatus *InstanceStatus, instanceName string, rootVolume *infrav1.RootVolume) error {
+	// when instance is nil, we dont check volume status
 	if instanceStatus == nil {
-		/*
-			We create a boot-from-volume instance in 2 steps:
-			1. Create the volume
-			2. Create the instance with the created root volume and set DeleteOnTermination
-
-			This introduces a new failure mode which has implications for safely deleting instances: we
-			might create the volume, but the instance create fails. This would leave us with a dangling
-			volume with no instance.
-
-			To handle this safely, we ensure that we never remove a machine finalizer until all resources
-			associated with the instance, including a root volume, have been deleted. To achieve this:
-			* We always call DeleteInstance when reconciling a delete, regardless of
-			  whether the instance exists or not.
-			* If the instance was already deleted we check that the volume is also gone.
-
-			Note that we don't need to separately delete the root volume when deleting the instance because
-			DeleteOnTermination will ensure it is deleted in that case.
-		*/
-		if hasRootVolume(rootVolume) {
-			name := rootVolumeName(instanceName)
-			volume, err := s.getVolumeByName(name)
-			if err != nil {
-				return err
-			}
-			if volume == nil {
-				return nil
-			}
-
-			s.scope.Logger.Info("deleting dangling root volume %s(%s)", volume.Name, volume.ID)
-			return s.getVolumeClient().DeleteVolume(volume.ID, volumes.DeleteOpts{})
-		}
+		///*
+		//	We create a boot-from-volume instance in 2 steps:
+		//	1. Create the volume
+		//	2. Create the instance with the created root volume and set DeleteOnTermination
+		//
+		//	This introduces a new failure mode which has implications for safely deleting instances: we
+		//	might create the volume, but the instance create fails. This would leave us with a dangling
+		//	volume with no instance.
+		//
+		//	To handle this safely, we ensure that we never remove a machine finalizer until all resources
+		//	associated with the instance, including a root volume, have been deleted. To achieve this:
+		//	* We always call DeleteInstance when reconciling a delete, regardless of
+		//	  whether the instance exists or not.
+		//	* If the instance was already deleted we check that the volume is also gone.
+		//
+		//	Note that we don't need to separately delete the root volume when deleting the instance because
+		//	DeleteOnTermination will ensure it is deleted in that case.
+		//*/
+		//if hasRootVolume(rootVolume) {
+		//	name := rootVolumeName(instanceName)
+		//	volume, err := s.getVolumeByName(name)
+		//	if err != nil {
+		//		return err
+		//	}
+		//	if volume == nil {
+		//		return nil
+		//	}
+		//
+		//	s.scope.Logger.Info("deleting dangling root volume %s(%s)", volume.Name, volume.ID)
+		//	return s.getVolumeClient().DeleteVolume(volume.ID, volumes.DeleteOpts{})
+		//}
 
 		return nil
 	}
