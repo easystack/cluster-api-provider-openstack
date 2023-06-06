@@ -338,6 +338,8 @@ func (s *Service) createInstanceImpl(eventObject runtime.Object, openStackCluste
 			return nil,err
 		}
 	}
+	//TODO check volume attach status
+
 	return createdInstance, nil
 }
 func Devicename(index int)  (string,error) {
@@ -494,7 +496,7 @@ func applyRootVolume(opts servers.CreateOptsBuilder, volume *volumes.Volume) ser
 		SourceType:          bootfromvolume.SourceVolume,
 		BootIndex:           0,
 		UUID:                volume.ID,
-		DeleteOnTermination: true,
+		DeleteOnTermination: false,
 		DestinationType:     bootfromvolume.DestinationVolume,
 	}
 	return bootfromvolume.CreateOptsExt{
