@@ -146,11 +146,14 @@ func reconcileDelete(ctx context.Context, scope *scope.Scope, patchHelper *patch
 
 	clusterName := fmt.Sprintf("%s-%s", cluster.Namespace, cluster.Name)
 
-	if err = networkingService.DeletePorts(openStackCluster); err != nil {
-		handleUpdateOSCError(openStackCluster, errors.Errorf("failed to delete ports: %v", err))
-		return reconcile.Result{}, errors.Wrap(err, "failed to delete ports")
+	// when bastion is non enabled, dont exec delete ports in network list of cluster
+	// eks dont have bastion,so never exec delete ports by cluster name prefix.
+	if openStackCluster.Spec.Bastion != nil &&  openStackCluster.Spec.Bastion.Enabled {
+		if err = networkingService.DeletePorts(openStackCluster); err != nil {
+			handleUpdateOSCError(openStackCluster, errors.Errorf("failed to delete ports: %v", err))
+			return reconcile.Result{}, errors.Wrap(err, "failed to delete ports")
+		}
 	}
-
 	if openStackCluster.Spec.APIServerLoadBalancer.Enabled {
 		loadBalancerService, err := loadbalancer.NewService(scope)
 		if err != nil {
