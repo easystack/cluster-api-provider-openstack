@@ -121,6 +121,29 @@ func (s *Service) generateDesiredSecGroups(openStackCluster *infrav1.OpenStackCl
 	controlPlaneRules = append(controlPlaneRules, GetSGControlPlaneHTTPS()...)
 	workerRules = append(workerRules, GetSGWorkerNodePort()...)
 
+	//add ssh ingress rule for all machine
+	controlPlaneRules = append(controlPlaneRules, []infrav1.SecurityGroupRule{
+		{
+			Description: "SSH",
+			Direction: "ingress",
+			EtherType: "IPv4",
+			PortRangeMin: 22,
+			PortRangeMax: 22,
+			Protocol: "tcp",
+		},
+	}...)
+
+	workerRules = append(workerRules, []infrav1.SecurityGroupRule{
+		{
+			Description: "SSH",
+			Direction: "ingress",
+			EtherType: "IPv4",
+			PortRangeMin: 22,
+			PortRangeMax: 22,
+			Protocol: "tcp",
+		},
+	}...)
+
 	if openStackCluster.Spec.AllowAllInClusterTraffic {
 		// Permit all ingress from the cluster security groups
 		controlPlaneRules = append(controlPlaneRules, GetSGControlPlaneAllowAll(remoteGroupIDSelf, secWorkerGroupID)...)

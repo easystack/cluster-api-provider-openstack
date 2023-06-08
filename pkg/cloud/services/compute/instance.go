@@ -338,7 +338,6 @@ func (s *Service) createInstanceImpl(eventObject runtime.Object, openStackCluste
 			return nil,err
 		}
 	}
-	//TODO check volume attach status
 
 	return createdInstance, nil
 }
