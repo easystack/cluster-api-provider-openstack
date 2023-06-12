@@ -434,7 +434,7 @@ func (r *OpenStackMachineReconciler) reconcileNormal(ctx context.Context, scope 
 	}
 	// when machine have machinedeployment.clusters.x-k8s.io/fip=enable annotation
 	// we should give the fip to machine
-	if (machine.Annotations["machinedeployment.clusters.x-k8s.io/fip"] == "enable") {
+	if machine.Annotations["machinedeployment.clusters.x-k8s.io/fip"] == "enable" {
 		fipAddress := ""
 		if machine.Annotations["machinedeployment.clusters.x-k8s.io/fip-address"] != "" {
 			fipAddress = machine.Annotations["machinedeployment.clusters.x-k8s.io/fip-address"]
@@ -443,12 +443,9 @@ func (r *OpenStackMachineReconciler) reconcileNormal(ctx context.Context, scope 
 		if len(addresses) > 1 {
 			if machine.Annotations["machinedeployment.clusters.x-k8s.io/fip-address"] != "" {
 				if  addresses[1].Address != machine.Annotations["machinedeployment.clusters.x-k8s.io/fip-address"]{
-					needgcfip := addresses[1].Address
+					gcFip := addresses[1].Address
 					//gc fip
-					if err = networkingService.DeleteFloatingIP(openStackMachine, needgcfip); err != nil {
-						conditions.MarkFalse(openStackMachine, infrav1.APIServerIngressReadyCondition, infrav1.FloatingIPErrorReason, clusterv1.ConditionSeverityError, "Deleting floating IP failed: %v", err)
-						return ctrl.Result{}, fmt.Errorf("delete floating IP %q: %w", needgcfip, err)
-					}
+					r.gcFip(openStackMachine, networkingService, gcFip,scope)
 				}else{
 					conditions.MarkTrue(openStackMachine, infrav1.APIServerIngressReadyCondition)
 					scope.Logger.Info("Reconciled Machine create successfully")
@@ -467,27 +464,25 @@ func (r *OpenStackMachineReconciler) reconcileNormal(ctx context.Context, scope 
 		}
 		var port = new(networkport.Port)
 		// we should get machine network name if we define network
-		if len(openStackMachine.Spec.Networks) > 0 {
-			nets, err := instanceStatus.NetworkStatus()
-			if err != nil {
-				conditions.MarkFalse(openStackMachine, infrav1.APIServerIngressReadyCondition, infrav1.FloatingIPErrorReason, clusterv1.ConditionSeverityError, "cann't get machine network information: %v", err)
-				return ctrl.Result{}, nil
-			}
-			pos, err := networkingService.GetPortFromInstanceIP(*openStackMachine.Spec.InstanceID, nets.Addresses()[0].Address)
-			if err != nil {
-				conditions.MarkFalse(openStackMachine, infrav1.APIServerIngressReadyCondition, infrav1.FloatingIPErrorReason, clusterv1.ConditionSeverityError, "failed to get machine ports information: %v", err)
-				return ctrl.Result{}, nil
-			}
-			port = &pos[0]
-		} else {
-			conditions.MarkFalse(openStackMachine, infrav1.APIServerIngressReadyCondition, infrav1.FloatingIPErrorReason, clusterv1.ConditionSeverityError, "waiting machine ports Associating: %v", err)
+		pos, err := networkingService.GetPortFromInstanceIP(*openStackMachine.Spec.InstanceID, instanceNS.Addresses()[0].Address)
+		if err != nil {
+			//gc fip when error occur
+			defer func() {
+				r.gcFip(openStackMachine, networkingService, fp.FloatingIP,scope)
+			}()
+			conditions.MarkFalse(openStackMachine, infrav1.APIServerIngressReadyCondition, infrav1.FloatingIPErrorReason, clusterv1.ConditionSeverityError, "failed to get machine ports information: %v", err)
 			return ctrl.Result{}, nil
 		}
+		port = &pos[0]
+
 		if fp.PortID != "" {
 			scope.Logger.Info("Floating IP already associated to a port:", "id", fp.ID, "fixed ip", fp.FixedIP, "portID", port.ID)
 		} else {
 			err = networkingService.AssociateFloatingIP(openStackMachine, fp, port.ID)
 			if err != nil {
+				defer func() {
+					r.gcFip(openStackMachine, networkingService, fp.FloatingIP,scope)
+				}()
 				conditions.MarkFalse(openStackMachine, infrav1.APIServerIngressReadyCondition, infrav1.FloatingIPErrorReason, clusterv1.ConditionSeverityError, "Associating floating IP failed: %v", err)
 				return ctrl.Result{}, fmt.Errorf("associate floating IP %q with port %q: %w", fp.FloatingIP, port.ID, err)
 			}
@@ -507,6 +502,12 @@ func (r *OpenStackMachineReconciler) reconcileNormal(ctx context.Context, scope 
 
 	scope.Logger.Info("Reconciled Machine create successfully")
 	return ctrl.Result{}, nil
+}
+//gcFip add  code to GC fip
+func (r *OpenStackMachineReconciler) gcFip(openStackMachine *infrav1.OpenStackMachine, networkingService *networking.Service, fp string, scope *scope.Scope) {
+		if err := networkingService.DeleteFloatingIP(openStackMachine, fp); err != nil {
+			scope.Logger.Info("when GC fip,delete floating ip failed", "err", err)
+		}
 }
 
 func (r *OpenStackMachineReconciler) getOrCreate(logger logr.Logger, cluster *clusterv1.Cluster, openStackCluster *infrav1.OpenStackCluster, machine *clusterv1.Machine, openStackMachine *infrav1.OpenStackMachine, computeService *compute.Service, userData string) (*compute.InstanceStatus, error) {
