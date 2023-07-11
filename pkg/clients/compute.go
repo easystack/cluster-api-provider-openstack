@@ -113,7 +113,7 @@ func (c computeClient) CreateServer(createOpts servers.CreateOptsBuilder) (*Serv
 
 func (c computeClient) DeleteServer(serverID string) error {
 	mc := metrics.NewMetricPrometheusContext("server", "delete")
-	err := servers.Delete(c.client, serverID).ExtractErr()
+	err := servers.ForceDelete(c.client, serverID).ExtractErr()
 	return mc.ObserveRequestIgnoreNotFound(err)
 }
 
