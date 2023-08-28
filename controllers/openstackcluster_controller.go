@@ -309,7 +309,9 @@ func reconcileBastion(scope *scope.Scope, cluster *clusterv1.Cluster, openStackC
 		return err
 	}
 
-	instanceSpec := bastionToInstanceSpec(openStackCluster, cluster.Name)
+	userData := openStackCluster.Spec.Bastion.UserData
+
+	instanceSpec := bastionToInstanceSpec(openStackCluster, cluster.Name, userData)
 	bastionHash, err := compute.HashInstanceSpec(instanceSpec)
 	if err != nil {
 		return errors.Wrap(err, "failed computing bastion hash from instance spec")
@@ -375,13 +377,14 @@ func reconcileBastion(scope *scope.Scope, cluster *clusterv1.Cluster, openStackC
 	return nil
 }
 
-func bastionToInstanceSpec(openStackCluster *infrav1.OpenStackCluster, clusterName string) *compute.InstanceSpec {
+func bastionToInstanceSpec(openStackCluster *infrav1.OpenStackCluster, clusterName string, userData string) *compute.InstanceSpec {
 	name := fmt.Sprintf("%s-bastion", clusterName)
 	instanceSpec := &compute.InstanceSpec{
 		Name:          name,
 		Flavor:        openStackCluster.Spec.Bastion.Instance.Flavor,
 		SSHKeyName:    openStackCluster.Spec.Bastion.Instance.SSHKeyName,
 		Image:         openStackCluster.Spec.Bastion.Instance.Image,
+		UserData:      userData,
 		ImageUUID:     openStackCluster.Spec.Bastion.Instance.ImageUUID,
 		FailureDomain: openStackCluster.Spec.Bastion.AvailabilityZone,
 		RootVolume:    openStackCluster.Spec.Bastion.Instance.RootVolume,

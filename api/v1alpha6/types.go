@@ -302,6 +302,9 @@ type Bastion struct {
 	// Instance for the bastion itself
 	Instance OpenStackMachineSpec `json:"instance,omitempty"`
 
+	// UserData for the bastion itself
+	UserData string `json:"userData,omitempty"`
+
 	//+optional
 	AvailabilityZone string `json:"availabilityZone,omitempty"`
 }

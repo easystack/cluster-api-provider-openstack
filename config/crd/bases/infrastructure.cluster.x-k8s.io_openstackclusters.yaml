@@ -4719,6 +4719,9 @@ spec:
                     required:
                     - flavor
                     type: object
+                  userData:
+                    description: UserData for the bastion itself
+                    type: string
                 type: object
               cloudName:
                 description: The name of the cloud to use from the clouds secret
