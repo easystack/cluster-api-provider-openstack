@@ -119,30 +119,36 @@ func (s *Service) generateDesiredSecGroups(openStackCluster *infrav1.OpenStackCl
 	workerRules := append([]infrav1.SecurityGroupRule{}, defaultRules...)
 
 	controlPlaneRules = append(controlPlaneRules, GetSGControlPlaneHTTPS()...)
+
+	controlPlaneRules = append(controlPlaneRules, GetSGControlPlaneNodePort()...)
 	workerRules = append(workerRules, GetSGWorkerNodePort()...)
 
-	//add ssh ingress rule for all machine
-	controlPlaneRules = append(controlPlaneRules, []infrav1.SecurityGroupRule{
-		{
-			Description: "SSH",
-			Direction: "ingress",
-			EtherType: "IPv4",
-			PortRangeMin: 22,
-			PortRangeMax: 22,
-			Protocol: "tcp",
-		},
-	}...)
+	// add KeepAlived vrrp
+	controlPlaneRules = append(controlPlaneRules, GetSGControlPlaneOrWorkVRRP()...)
+	workerRules = append(workerRules, GetSGControlPlaneOrWorkVRRP()...)
 
-	workerRules = append(workerRules, []infrav1.SecurityGroupRule{
-		{
-			Description: "SSH",
-			Direction: "ingress",
-			EtherType: "IPv4",
-			PortRangeMin: 22,
-			PortRangeMax: 22,
-			Protocol: "tcp",
-		},
-	}...)
+	// add 80,443 for every node
+	controlPlaneRules = append(controlPlaneRules, GetSGControlPlaneOrWorkIngress()...)
+	workerRules = append(workerRules, GetSGControlPlaneOrWorkIngress()...)
+
+	// add ICMP rules
+	controlPlaneRules = append(controlPlaneRules, GetSGControlPlaneICMP(remoteGroupIDSelf)...)
+	workerRules = append(workerRules, GetSGWorkerICMP(remoteGroupIDSelf)...)
+
+	// add prometheus port
+	controlPlaneRules = append(controlPlaneRules, GetSGControlPlaneForPrometheus(remoteGroupIDSelf, secWorkerGroupID)...)
+	workerRules = append(workerRules, GetSGWorkForPrometheus(remoteGroupIDSelf, secControlPlaneGroupID)...)
+
+	// add coredns port
+	controlPlaneRules = append(controlPlaneRules, GetSGControlPlaneForCOREDNS(remoteGroupIDSelf, secWorkerGroupID)...)
+	workerRules = append(workerRules, GetSGWorkForCOREDNS(remoteGroupIDSelf, secControlPlaneGroupID)...)
+
+	// add cadvisor port
+	controlPlaneRules = append(controlPlaneRules, GetSGControlPlaneForCadvisor(remoteGroupIDSelf, secWorkerGroupID)...)
+	workerRules = append(workerRules, GetSGWorkForCadvisor(remoteGroupIDSelf, secControlPlaneGroupID)...)
+
+	// add 8443(nginx from kubeApiServer)
+	controlPlaneRules = append(controlPlaneRules, GetSGControlPlaneHTTPSNGINX()...)
 
 	if openStackCluster.Spec.AllowAllInClusterTraffic {
 		// Permit all ingress from the cluster security groups
