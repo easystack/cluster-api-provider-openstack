@@ -123,6 +123,10 @@ func (s *Service) generateDesiredSecGroups(openStackCluster *infrav1.OpenStackCl
 	controlPlaneRules = append(controlPlaneRules, GetSGControlPlaneNodePort()...)
 	workerRules = append(workerRules, GetSGWorkerNodePort()...)
 
+	// add Flannel port 8472
+	controlPlaneRules = append(controlPlaneRules, GetSGControlPlaneFlannel()...)
+	workerRules = append(workerRules, GetSGWorkerFlannel()...)
+
 	// add KeepAlived vrrp
 	controlPlaneRules = append(controlPlaneRules, GetSGControlPlaneOrWorkVRRP()...)
 	workerRules = append(workerRules, GetSGControlPlaneOrWorkVRRP()...)
@@ -149,6 +153,7 @@ func (s *Service) generateDesiredSecGroups(openStackCluster *infrav1.OpenStackCl
 
 	// add 8443(nginx from kubeApiServer)
 	controlPlaneRules = append(controlPlaneRules, GetSGControlPlaneHTTPSNGINX()...)
+	controlPlaneRules = append(controlPlaneRules, GetSGControlPlaneHTTP()...)
 
 	if openStackCluster.Spec.AllowAllInClusterTraffic {
 		// Permit all ingress from the cluster security groups
