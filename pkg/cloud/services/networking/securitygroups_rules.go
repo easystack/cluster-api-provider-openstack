@@ -620,7 +620,6 @@ func getSGControlPlaneCommon(remoteGroupIDSelf, secWorkerGroupID string) []infra
 			PortRangeMin:  2379,
 			PortRangeMax:  2380,
 			Protocol:      "tcp",
-			RemoteGroupID: remoteGroupIDSelf,
 		},
 		{
 			// kubeadm says this is needed
