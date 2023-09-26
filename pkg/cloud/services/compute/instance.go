@@ -287,7 +287,7 @@ func (s *Service) createInstanceImpl(eventObject runtime.Object, openStackCluste
 		AccessIPv4:       accessIPv4,
 	}
 
-	serverCreateOpts = applyRootVolume(serverCreateOpts, volume)
+	serverCreateOpts = applyRootVolume(serverCreateOpts, volume, instanceSpec)
 
 	serverCreateOpts = applyServerGroupID(serverCreateOpts, instanceSpec.ServerGroupID)
 
@@ -331,6 +331,7 @@ func (s *Service) createInstanceImpl(eventObject runtime.Object, openStackCluste
 		createOpts := volumeattach.CreateOpts{
 			Device:   fmt.Sprintf("/dev/vd%s",num),
 			VolumeID: volume.ID,
+			DeleteOnTermination: instanceSpec.DeleteVolumeOnTermination,
 		}
 		_, err = volumeattach.Create(s.getGopherClient(), createdInstance.ID(), createOpts).Extract()
 		if err != nil {
@@ -486,7 +487,7 @@ func (s *Service) getOrCreateCustomeVolumes(eventObject runtime.Object, instance
 }
 
 // applyRootVolume sets a root volume if the root volume Size is not 0.
-func applyRootVolume(opts servers.CreateOptsBuilder, volume *volumes.Volume) servers.CreateOptsBuilder {
+func applyRootVolume(opts servers.CreateOptsBuilder, volume *volumes.Volume, instanceSpec *InstanceSpec) servers.CreateOptsBuilder {
 	if volume == nil {
 		return opts
 	}
@@ -495,7 +496,7 @@ func applyRootVolume(opts servers.CreateOptsBuilder, volume *volumes.Volume) ser
 		SourceType:          bootfromvolume.SourceVolume,
 		BootIndex:           0,
 		UUID:                volume.ID,
-		DeleteOnTermination: false,
+		DeleteOnTermination: instanceSpec.DeleteVolumeOnTermination,
 		DestinationType:     bootfromvolume.DestinationVolume,
 	}
 	return bootfromvolume.CreateOptsExt{

@@ -51,6 +51,7 @@ type InstanceSpec struct {
 	SecurityGroups []infrav1.SecurityGroupParam
 	Networks       []infrav1.NetworkParam
 	Ports          []infrav1.PortOpts
+	DeleteVolumeOnTermination bool
 }
 
 // InstanceIdentifier describes an instance which has not necessarily been fetched.

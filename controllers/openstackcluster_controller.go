@@ -388,6 +388,7 @@ func bastionToInstanceSpec(openStackCluster *infrav1.OpenStackCluster, clusterNa
 		ImageUUID:     openStackCluster.Spec.Bastion.Instance.ImageUUID,
 		FailureDomain: openStackCluster.Spec.Bastion.AvailabilityZone,
 		RootVolume:    openStackCluster.Spec.Bastion.Instance.RootVolume,
+		DeleteVolumeOnTermination: openStackCluster.Spec.Bastion.Instance.DeleteVolumeOnTermination,
 	}
 
 	instanceSpec.SecurityGroups = openStackCluster.Spec.Bastion.Instance.SecurityGroups

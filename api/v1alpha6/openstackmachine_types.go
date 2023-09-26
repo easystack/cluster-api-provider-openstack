@@ -94,6 +94,8 @@ type OpenStackMachineSpec struct {
 	// The custome metadata to boot from
 	CustomeVolumes []*RootVolume `json:"customeVolumes,omitempty"`
 
+	// The volume delete on termination
+	DeleteVolumeOnTermination bool `json:"deleteVolumeOnTermination,omitempty"`
 
 	// The server group to assign the machine to
 	ServerGroupID string `json:"serverGroupID,omitempty"`

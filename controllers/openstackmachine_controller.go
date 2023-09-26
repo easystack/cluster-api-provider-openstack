@@ -544,6 +544,7 @@ func machineToInstanceSpec(openStackCluster *infrav1.OpenStackCluster, machine *
 		Subnet:        openStackMachine.Spec.Subnet,
 		ServerGroupID: openStackMachine.Spec.ServerGroupID,
 		Trunk:         openStackMachine.Spec.Trunk,
+		DeleteVolumeOnTermination: openStackMachine.Spec.DeleteVolumeOnTermination,
 	}
 
 	// Add the failure domain only if specified

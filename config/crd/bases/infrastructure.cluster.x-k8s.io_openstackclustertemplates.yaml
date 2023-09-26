@@ -1550,6 +1550,9 @@ spec:
                                       type: string
                                   type: object
                                 type: array
+                              deleteVolumeOnTermination:
+                                description: The volume delete on termination
+                                type: boolean
                               flavor:
                                 description: The flavor reference for the flavor for
                                   your server instance.
