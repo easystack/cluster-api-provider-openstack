@@ -49,6 +49,7 @@ func (s Service) getGopherClient() *gophercloud.ServiceClient  {
 	if err != nil {
 		return nil
 	}
+	computeClient.Microversion = "2.79"
 	return computeClient
 }
 
