@@ -66,6 +66,8 @@ type OpenStackMachineSpec struct {
 	// UUID, IP address of a port from this subnet will be marked as AccessIPv4 on the created compute instance
 	Subnet string `json:"subnet,omitempty"`
 
+	DisableFloatingIP bool `json:"disableAPIServerFloatingIP"`
+
 	// The floatingIP which will be associated to the machine, only used for master.
 	// The floatingIP should have been created and haven't been associated.
 	FloatingIP string `json:"floatingIP,omitempty"`

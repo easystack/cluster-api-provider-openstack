@@ -155,6 +155,8 @@ spec:
                       configDrive:
                         description: Config Drive support
                         type: boolean
+                      disableAPIServerFloatingIP:
+                        type: boolean
                       flavor:
                         description: The flavor reference for the flavor for your
                           server instance.
@@ -542,6 +544,7 @@ spec:
                           port or not.
                         type: boolean
                     required:
+                    - disableAPIServerFloatingIP
                     - flavor
                     type: object
                 type: object
