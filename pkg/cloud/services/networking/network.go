@@ -42,7 +42,7 @@ func (c createOpts) ToNetworkCreateMap() (map[string]interface{}, error) {
 }
 
 func (s *Service) ReconcileExternalNetwork(openStackCluster *infrav1.OpenStackCluster) error {
-	if openStackCluster.Spec.ExternalNetworkID != "" {
+	if openStackCluster.Spec.ExternalNetworkID != "" && !openStackCluster.Spec.DisableFloatingIP {
 		externalNetwork, err := s.getNetworkByID(openStackCluster.Spec.ExternalNetworkID)
 		if err != nil {
 			return err

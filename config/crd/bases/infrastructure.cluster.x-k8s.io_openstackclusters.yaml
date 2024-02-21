@@ -4,11 +4,6 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.10.0
-  labels:
-    cluster.x-k8s.io/provider: infrastructure-openstack
-    cluster.x-k8s.io/v1alpha3: v1alpha3
-    cluster.x-k8s.io/v1beta1: v1alpha4_v1alpha5_v1alpha6
-    clusterctl.cluster.x-k8s.io: ""
   creationTimestamp: null
   name: openstackclusters.infrastructure.cluster.x-k8s.io
 spec:
@@ -4771,6 +4766,10 @@ spec:
                   fail without additional configuration to manage the VIP on the control
                   plane machines, which falls outside of the scope of this controller.
                 type: boolean
+              disableFloatingIP:
+                description: DisableFloatingIP determines whether or not to attempt
+                  to attach a floating IP to the Instance.
+                type: boolean
               disablePortSecurity:
                 description: DisablePortSecurity disables the port security of the
                   network created for the Kubernetes cluster, which also disables
@@ -4932,6 +4931,8 @@ spec:
                   type: string
                 type: array
                 x-kubernetes-list-type: set
+            required:
+            - disableFloatingIP
             type: object
           status:
             description: OpenStackClusterStatus defines the observed state of OpenStackCluster.
