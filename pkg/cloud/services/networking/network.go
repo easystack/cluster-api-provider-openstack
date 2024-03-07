@@ -42,6 +42,12 @@ func (c createOpts) ToNetworkCreateMap() (map[string]interface{}, error) {
 }
 
 func (s *Service) ReconcileExternalNetwork(openStackCluster *infrav1.OpenStackCluster) error {
+	if openStackCluster.Spec.DisableFloatingIP {
+		openStackCluster.Status.ExternalNetwork = &infrav1.Network{}
+		s.scope.Logger.Info("External network was disabled - proceeding with internal network only")
+		return nil
+	}
+
 	if openStackCluster.Spec.ExternalNetworkID != "" {
 		externalNetwork, err := s.getNetworkByID(openStackCluster.Spec.ExternalNetworkID)
 		if err != nil {

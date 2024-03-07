@@ -344,35 +344,37 @@ func reconcileBastion(scope *scope.Scope, cluster *clusterv1.Cluster, openStackC
 	if err != nil {
 		return errors.Errorf("failed to reconcile bastion: %v", err)
 	}
+	if !openStackCluster.Spec.DisableFloatingIP {
+		networkingService, err := networking.NewService(scope)
+		if err != nil {
+			return err
+		}
+		clusterName := fmt.Sprintf("%s-%s", cluster.Namespace, cluster.Name)
+		fp, err := networkingService.GetOrCreateFloatingIP(openStackCluster, openStackCluster, clusterName, openStackCluster.Spec.Bastion.Instance.FloatingIP)
+		if err != nil {
+			handleUpdateOSCError(openStackCluster, errors.Errorf("failed to get or create floating IP for bastion: %v", err))
+			return errors.Errorf("failed to get or create floating IP for bastion: %v", err)
+		}
+		port, err := computeService.GetManagementPort(openStackCluster, instanceStatus)
+		if err != nil {
+			err = errors.Errorf("getting management port for bastion: %v", err)
+			handleUpdateOSCError(openStackCluster, err)
+			return err
+		}
+		err = networkingService.AssociateFloatingIP(openStackCluster, fp, port.ID)
+		if err != nil {
+			handleUpdateOSCError(openStackCluster, errors.Errorf("failed to associate floating IP with bastion: %v", err))
+			return errors.Errorf("failed to associate floating IP with bastion: %v", err)
+		}
 
-	networkingService, err := networking.NewService(scope)
-	if err != nil {
-		return err
-	}
-	clusterName := fmt.Sprintf("%s-%s", cluster.Namespace, cluster.Name)
-	fp, err := networkingService.GetOrCreateFloatingIP(openStackCluster, openStackCluster, clusterName, openStackCluster.Spec.Bastion.Instance.FloatingIP)
-	if err != nil {
-		handleUpdateOSCError(openStackCluster, errors.Errorf("failed to get or create floating IP for bastion: %v", err))
-		return errors.Errorf("failed to get or create floating IP for bastion: %v", err)
-	}
-	port, err := computeService.GetManagementPort(openStackCluster, instanceStatus)
-	if err != nil {
-		err = errors.Errorf("getting management port for bastion: %v", err)
-		handleUpdateOSCError(openStackCluster, err)
-		return err
-	}
-	err = networkingService.AssociateFloatingIP(openStackCluster, fp, port.ID)
-	if err != nil {
-		handleUpdateOSCError(openStackCluster, errors.Errorf("failed to associate floating IP with bastion: %v", err))
-		return errors.Errorf("failed to associate floating IP with bastion: %v", err)
+		bastion, err := instanceStatus.APIInstance(openStackCluster)
+		if err != nil {
+			return err
+		}
+		bastion.FloatingIP = fp.FloatingIP
+		openStackCluster.Status.Bastion = bastion
 	}
 
-	bastion, err := instanceStatus.APIInstance(openStackCluster)
-	if err != nil {
-		return err
-	}
-	bastion.FloatingIP = fp.FloatingIP
-	openStackCluster.Status.Bastion = bastion
 	annotations.AddAnnotations(openStackCluster, map[string]string{BastionInstanceHashAnnotation: bastionHash})
 	return nil
 }

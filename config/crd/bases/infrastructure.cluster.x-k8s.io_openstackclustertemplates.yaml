@@ -2011,6 +2011,10 @@ spec:
                           configuration to manage the VIP on the control plane machines,
                           which falls outside of the scope of this controller.
                         type: boolean
+                      disableFloatingIP:
+                        description: DisableFloatingIP determines whether or not to
+                          attempt to attach a floating IP to the Instance.
+                        type: boolean
                       disablePortSecurity:
                         description: DisablePortSecurity disables the port security
                           of the network created for the Kubernetes cluster, which
@@ -2177,6 +2181,8 @@ spec:
                           type: string
                         type: array
                         x-kubernetes-list-type: set
+                    required:
+                    - disableFloatingIP
                     type: object
                 required:
                 - spec

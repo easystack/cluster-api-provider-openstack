@@ -63,6 +63,10 @@ type OpenStackClusterSpec struct {
 	// +optional
 	APIServerLoadBalancer APIServerLoadBalancer `json:"apiServerLoadBalancer,omitempty"`
 
+	// DisableFloatingIP determines whether or not to attempt to attach a floating
+	// IP to the Instance. 
+	DisableFloatingIP bool `json:"disableFloatingIP"`
+
 	// DisableAPIServerFloatingIP determines whether or not to attempt to attach a floating
 	// IP to the API server. This allows for the creation of clusters when attaching a floating
 	// IP to the API server (and hence, in many cases, exposing the API server to the internet)
