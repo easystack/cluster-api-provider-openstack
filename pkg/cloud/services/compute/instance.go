@@ -323,36 +323,45 @@ func (s *Service) createInstanceImpl(eventObject runtime.Object, openStackCluste
 	//add custome data volume attach
 	// if err happened,return error
 	for index, volume := range volumes {
-		num,err := Devicename(index)
-		if err!=nil {
+		num, err := Devicename(index)
+		if err != nil {
 			record.Eventf(eventObject, "FailedAttachDataVolume", "too long Attach  server %s with volume  %s", createdInstance.Name(), volume.ID)
-			return nil,err
+			return nil, err
 		}
+
+		if volume == nil {
+			continue
+		}
+
+		if volume != nil && volume.ID == "" {
+			continue
+		}
+
 		createOpts := volumeattach.CreateOpts{
-			Device:   fmt.Sprintf("/dev/vd%s",num),
-			VolumeID: volume.ID,
+			Device:              fmt.Sprintf("/dev/vd%s", num),
+			VolumeID:            volume.ID,
 			DeleteOnTermination: instanceSpec.DeleteVolumeOnTermination,
 		}
 		_, err = volumeattach.Create(s.getGopherClient(), createdInstance.ID(), createOpts).Extract()
 		if err != nil {
 			record.Eventf(eventObject, "FailedAttachDataVolume", "Attach  server %s with volume  %s error", createdInstance.Name(), volume.ID)
-			return nil,err
+			return nil, err
 		}
 	}
 
 	return createdInstance, nil
 }
-func Devicename(index int)  (string,error) {
+func Devicename(index int) (string, error) {
 	//定义一个字符 变量a 是一个byte类型的 表示单个字符
 	if index >= 26 {
-		return "",fmt.Errorf("%s","too much attach device")
+		return "", fmt.Errorf("%s", "too much attach device")
 	}
 	var a = 'a'
 	//生成26个字符
 	for i := 1; i <= index; i++ {
 		a++
 	}
-	return string(a),nil
+	return string(a), nil
 }
 
 // getPortName appends a suffix to an instance name in order to try and get a unique name per port.
@@ -437,7 +446,7 @@ func (s *Service) getOrCreateRootVolume(eventObject runtime.Object, instanceSpec
 
 func (s *Service) getOrCreateCustomeVolumes(eventObject runtime.Object, instanceSpec *InstanceSpec) ([]*volumes.Volume, error) {
 	cvs := instanceSpec.CustomeVolumes
-	var result = make([]*volumes.Volume,0,3)
+	var result = make([]*volumes.Volume, 0, 3)
 	for index, vo := range cvs {
 		if !hasRootVolume(vo) {
 			continue
