@@ -64,7 +64,7 @@ type OpenStackClusterSpec struct {
 	APIServerLoadBalancer APIServerLoadBalancer `json:"apiServerLoadBalancer,omitempty"`
 
 	// DisableFloatingIP determines whether or not to attempt to attach a floating
-	// IP to the Instance. 
+	// IP to the Instance.
 	DisableFloatingIP bool `json:"disableFloatingIP"`
 
 	// DisableAPIServerFloatingIP determines whether or not to attempt to attach a floating
@@ -214,6 +214,8 @@ type OpenStackClusterStatus struct {
 	// and/or logged in the controller's output.
 	// +optional
 	FailureMessage *string `json:"failureMessage,omitempty"`
+
+	Conditions clusterv1.Conditions `json:"conditions,omitempty"`
 }
 
 // +kubebuilder:object:root=true
@@ -248,4 +250,14 @@ type OpenStackClusterList struct {
 
 func init() {
 	SchemeBuilder.Register(&OpenStackCluster{}, &OpenStackClusterList{})
+}
+
+// GetConditions returns the observations of the operational state of the OpenStackMachine resource.
+func (r *OpenStackCluster) GetConditions() clusterv1.Conditions {
+	return r.Status.Conditions
+}
+
+// SetConditions sets the underlying service state of the OpenStackMachine to the predescribed clusterv1.Conditions.
+func (r *OpenStackCluster) SetConditions(conditions clusterv1.Conditions) {
+	r.Status.Conditions = conditions
 }

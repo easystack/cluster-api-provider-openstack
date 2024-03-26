@@ -45,6 +45,10 @@ const (
 	defaultLoadBalancerProvider string = "amphora"
 )
 
+var (
+	ErrLoadBalancerNoPoint = "failed to create load balancer service client: No suitable endpoint could be found in the service catalog."
+)
+
 const loadBalancerProvisioningStatusActive = "ACTIVE"
 
 func (s *Service) ReconcileLoadBalancer(openStackCluster *infrav1.OpenStackCluster, clusterName string, apiServerPort int) error {

@@ -19,7 +19,10 @@ package controllers
 import (
 	"context"
 	"fmt"
+	kerrors "k8s.io/apimachinery/pkg/util/errors"
 	"reflect"
+	"sigs.k8s.io/cluster-api/util/conditions"
+	"strings"
 
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
@@ -79,6 +82,10 @@ func (r *OpenStackClusterReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		return reconcile.Result{}, err
 	}
 
+	if req.Name != "test3" {
+		return reconcile.Result{}, nil
+	}
+
 	// Fetch the Cluster.
 	cluster, err := util.GetOwnerCluster(ctx, r.Client, openStackCluster.ObjectMeta)
 	if err != nil {
@@ -104,10 +111,8 @@ func (r *OpenStackClusterReconciler) Reconcile(ctx context.Context, req ctrl.Req
 
 	// Always patch the openStackCluster when exiting this function so we can persist any OpenStackCluster changes.
 	defer func() {
-		if err := patchHelper.Patch(ctx, openStackCluster); err != nil {
-			if reterr == nil {
-				reterr = errors.Wrapf(err, "error patching OpenStackCluster %s/%s", openStackCluster.Namespace, openStackCluster.Name)
-			}
+		if err := patchCluster(ctx, patchHelper, openStackCluster); err != nil {
+			reterr = kerrors.NewAggregate([]error{reterr, err})
 		}
 	}()
 
@@ -132,6 +137,27 @@ func (r *OpenStackClusterReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	return reconcileNormal(ctx, scope, patchHelper, cluster, openStackCluster)
 }
 
+func patchCluster(ctx context.Context, patchHelper *patch.Helper, openStackCluster *infrav1.OpenStackCluster, options ...patch.Option) error {
+	// Always update the readyCondition by summarizing the state of other conditions.
+	applicableConditions := []clusterv1.ConditionType{
+		infrav1.ClusterReadyCondition,
+	}
+
+	conditions.SetSummary(openStackCluster,
+		conditions.WithConditions(applicableConditions...),
+	)
+
+	// Patch the object, ignoring conflicts on the conditions owned by this controller.
+	// Also, if requested, we are adding additional options like e.g. Patch ObservedGeneration when issuing the
+	// patch at the end of the reconcile loop.
+	options = append(options,
+		patch.WithOwnedConditions{Conditions: []clusterv1.ConditionType{
+			clusterv1.ReadyCondition,
+		}},
+	)
+	return patchHelper.Patch(ctx, openStackCluster, options...)
+}
+
 func reconcileDelete(ctx context.Context, scope *scope.Scope, patchHelper *patch.Helper, cluster *clusterv1.Cluster, openStackCluster *infrav1.OpenStackCluster) (ctrl.Result, error) {
 	scope.Logger.Info("Reconciling Cluster delete")
 
@@ -146,15 +172,25 @@ func reconcileDelete(ctx context.Context, scope *scope.Scope, patchHelper *patch
 
 	clusterName := fmt.Sprintf("%s-%s", cluster.Namespace, cluster.Name)
 
+	var skipLBDeleting bool
+
 	if openStackCluster.Spec.APIServerLoadBalancer.Enabled {
 		loadBalancerService, err := loadbalancer.NewService(scope)
 		if err != nil {
-			return reconcile.Result{}, err
+			if strings.EqualFold(err.Error(), loadbalancer.ErrLoadBalancerNoPoint) {
+				handleUpdateOSCError(openStackCluster, fmt.Errorf("failed to init delete load balancer client: %w", err))
+				skipLBDeleting = true
+			}
+			if !skipLBDeleting {
+				return reconcile.Result{}, err
+			}
 		}
 
-		if err = loadBalancerService.DeleteLoadBalancer(openStackCluster, clusterName); err != nil {
-			handleUpdateOSCError(openStackCluster, errors.Errorf("failed to delete load balancer: %v", err))
-			return reconcile.Result{}, errors.Errorf("failed to delete load balancer: %v", err)
+		if !skipLBDeleting {
+			if err = loadBalancerService.DeleteLoadBalancer(openStackCluster, clusterName); err != nil {
+				handleUpdateOSCError(openStackCluster, errors.Errorf("failed to delete load balancer: %v", err))
+				return reconcile.Result{}, errors.Errorf("failed to delete load balancer: %v", err)
+			}
 		}
 	}
 
@@ -249,6 +285,10 @@ func deleteBastion(scope *scope.Scope, cluster *clusterv1.Cluster, openStackClus
 func reconcileNormal(ctx context.Context, scope *scope.Scope, patchHelper *patch.Helper, cluster *clusterv1.Cluster, openStackCluster *infrav1.OpenStackCluster) (ctrl.Result, error) {
 	scope.Logger.Info("Reconciling Cluster")
 
+	if openStackCluster.Status.FailureReason != nil || openStackCluster.Status.FailureMessage != nil {
+		scope.Logger.Info("Not reconciling cluster in failed state. See openStackCluster.status.failureReason, openStackCluster.status.failureMessage, or previously logged error for details")
+		return ctrl.Result{}, nil
+	}
 	// If the OpenStackCluster doesn't have our finalizer, add it.
 	controllerutil.AddFinalizer(openStackCluster, infrav1.ClusterFinalizer)
 	// Register the finalizer immediately to avoid orphaning OpenStack resources on delete
@@ -382,14 +422,14 @@ func reconcileBastion(scope *scope.Scope, cluster *clusterv1.Cluster, openStackC
 func bastionToInstanceSpec(openStackCluster *infrav1.OpenStackCluster, clusterName string, userData string) *compute.InstanceSpec {
 	name := fmt.Sprintf("%s-bastion", clusterName)
 	instanceSpec := &compute.InstanceSpec{
-		Name:          name,
-		Flavor:        openStackCluster.Spec.Bastion.Instance.Flavor,
-		SSHKeyName:    openStackCluster.Spec.Bastion.Instance.SSHKeyName,
-		Image:         openStackCluster.Spec.Bastion.Instance.Image,
-		UserData:      userData,
-		ImageUUID:     openStackCluster.Spec.Bastion.Instance.ImageUUID,
-		FailureDomain: openStackCluster.Spec.Bastion.AvailabilityZone,
-		RootVolume:    openStackCluster.Spec.Bastion.Instance.RootVolume,
+		Name:                      name,
+		Flavor:                    openStackCluster.Spec.Bastion.Instance.Flavor,
+		SSHKeyName:                openStackCluster.Spec.Bastion.Instance.SSHKeyName,
+		Image:                     openStackCluster.Spec.Bastion.Instance.Image,
+		UserData:                  userData,
+		ImageUUID:                 openStackCluster.Spec.Bastion.Instance.ImageUUID,
+		FailureDomain:             openStackCluster.Spec.Bastion.AvailabilityZone,
+		RootVolume:                openStackCluster.Spec.Bastion.Instance.RootVolume,
 		DeleteVolumeOnTermination: openStackCluster.Spec.Bastion.Instance.DeleteVolumeOnTermination,
 	}
 
@@ -512,6 +552,10 @@ func reconcileNetworkComponents(scope *scope.Scope, cluster *clusterv1.Cluster, 
 	if openStackCluster.Spec.APIServerLoadBalancer.Enabled {
 		loadBalancerService, err := loadbalancer.NewService(scope)
 		if err != nil {
+			if strings.EqualFold(err.Error(), loadbalancer.ErrLoadBalancerNoPoint) {
+				handleUpdateOSCError(openStackCluster, fmt.Errorf("failed to init load balancer client: %w", err))
+				conditions.MarkFalse(openStackCluster, infrav1.ClusterReadyReason, infrav1.LoadBalancerReconcileErrorReason, clusterv1.ConditionSeverityError, err.Error())
+			}
 			return err
 		}
 
