@@ -82,10 +82,6 @@ func (r *OpenStackClusterReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		return reconcile.Result{}, err
 	}
 
-	if req.Name != "test3" {
-		return reconcile.Result{}, nil
-	}
-
 	// Fetch the Cluster.
 	cluster, err := util.GetOwnerCluster(ctx, r.Client, openStackCluster.ObjectMeta)
 	if err != nil {
@@ -138,24 +134,12 @@ func (r *OpenStackClusterReconciler) Reconcile(ctx context.Context, req ctrl.Req
 }
 
 func patchCluster(ctx context.Context, patchHelper *patch.Helper, openStackCluster *infrav1.OpenStackCluster, options ...patch.Option) error {
-	// Always update the readyCondition by summarizing the state of other conditions.
-	applicableConditions := []clusterv1.ConditionType{
-		infrav1.ClusterReadyCondition,
+	err := patchHelper.Patch(ctx, openStackCluster, options...)
+	if err != nil {
+		return err
 	}
+	return nil
 
-	conditions.SetSummary(openStackCluster,
-		conditions.WithConditions(applicableConditions...),
-	)
-
-	// Patch the object, ignoring conflicts on the conditions owned by this controller.
-	// Also, if requested, we are adding additional options like e.g. Patch ObservedGeneration when issuing the
-	// patch at the end of the reconcile loop.
-	options = append(options,
-		patch.WithOwnedConditions{Conditions: []clusterv1.ConditionType{
-			clusterv1.ReadyCondition,
-		}},
-	)
-	return patchHelper.Patch(ctx, openStackCluster, options...)
 }
 
 func reconcileDelete(ctx context.Context, scope *scope.Scope, patchHelper *patch.Helper, cluster *clusterv1.Cluster, openStackCluster *infrav1.OpenStackCluster) (ctrl.Result, error) {
@@ -660,4 +644,5 @@ func handleUpdateOSCError(openstackCluster *infrav1.OpenStackCluster, message er
 	err := capierrors.UpdateClusterError
 	openstackCluster.Status.FailureReason = &err
 	openstackCluster.Status.FailureMessage = pointer.StringPtr(message.Error())
+	openstackCluster.Status.Ready = false
 }
