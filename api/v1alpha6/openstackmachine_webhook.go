@@ -88,15 +88,14 @@ func (r *OpenStackMachine) ValidateUpdate(old runtime.Object) error {
 	newOpenStackMachineSpec := newOpenStackMachine["spec"].(map[string]interface{})
 	oldOpenStackMachineSpec := oldOpenStackMachine["spec"].(map[string]interface{})
 
-
 	// allow changes to providerID always
-	if oldOpenStackMachineSpec["providerID"] != nil  || newOpenStackMachineSpec["providerID"] != nil {
+	if oldOpenStackMachineSpec["providerID"] != nil || newOpenStackMachineSpec["providerID"] != nil {
 		delete(oldOpenStackMachineSpec, "providerID")
 		delete(newOpenStackMachineSpec, "providerID")
 	}
 
 	// allow changes to instanceID always
-	if oldOpenStackMachineSpec["instanceID"] != nil  || newOpenStackMachineSpec["instanceID"] != nil {
+	if oldOpenStackMachineSpec["instanceID"] != nil || newOpenStackMachineSpec["instanceID"] != nil {
 		delete(oldOpenStackMachineSpec, "instanceID")
 		delete(newOpenStackMachineSpec, "instanceID")
 	}

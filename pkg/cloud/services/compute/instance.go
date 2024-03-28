@@ -18,10 +18,11 @@ package compute
 
 import (
 	"fmt"
-	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/volumeattach"
 	"os"
 	"strconv"
 	"time"
+
+	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/volumeattach"
 
 	"github.com/gophercloud/gophercloud/openstack/blockstorage/v3/volumes"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/bootfromvolume"
@@ -320,7 +321,7 @@ func (s *Service) createInstanceImpl(eventObject runtime.Object, openStackCluste
 
 	record.Eventf(eventObject, "SuccessfulCreateServer", "Created server %s with id %s", createdInstance.Name(), createdInstance.ID())
 
-	//add custome data volume attach
+	// add custome data volume attach
 	// if err happened,return error
 	for index, volume := range volumes {
 		num, err := Devicename(index)
@@ -351,13 +352,14 @@ func (s *Service) createInstanceImpl(eventObject runtime.Object, openStackCluste
 
 	return createdInstance, nil
 }
+
 func Devicename(index int) (string, error) {
-	//定义一个字符 变量a 是一个byte类型的 表示单个字符
+	// 定义一个字符 变量a 是一个byte类型的 表示单个字符
 	if index >= 26 {
 		return "", fmt.Errorf("%s", "too much attach device")
 	}
-	var a = 'a'
-	//生成26个字符
+	a := 'a'
+	// 生成26个字符
 	for i := 1; i <= index; i++ {
 		a++
 	}
@@ -446,7 +448,7 @@ func (s *Service) getOrCreateRootVolume(eventObject runtime.Object, instanceSpec
 
 func (s *Service) getOrCreateCustomeVolumes(eventObject runtime.Object, instanceSpec *InstanceSpec) ([]*volumes.Volume, error) {
 	cvs := instanceSpec.CustomeVolumes
-	var result = make([]*volumes.Volume, 0, 3)
+	result := make([]*volumes.Volume, 0, 3)
 	for index, vo := range cvs {
 		if !hasRootVolume(vo) {
 			continue

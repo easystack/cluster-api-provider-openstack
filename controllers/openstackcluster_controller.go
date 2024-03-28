@@ -19,10 +19,12 @@ package controllers
 import (
 	"context"
 	"fmt"
-	kerrors "k8s.io/apimachinery/pkg/util/errors"
 	"reflect"
-	"sigs.k8s.io/cluster-api/util/conditions"
 	"strings"
+
+	kerrors "k8s.io/apimachinery/pkg/util/errors"
+
+	"sigs.k8s.io/cluster-api/util/conditions"
 
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
@@ -139,7 +141,6 @@ func patchCluster(ctx context.Context, patchHelper *patch.Helper, openStackClust
 		return err
 	}
 	return nil
-
 }
 
 func reconcileDelete(ctx context.Context, scope *scope.Scope, patchHelper *patch.Helper, cluster *clusterv1.Cluster, openStackCluster *infrav1.OpenStackCluster) (ctrl.Result, error) {

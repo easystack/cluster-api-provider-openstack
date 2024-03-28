@@ -161,7 +161,8 @@ func NewClient(cloud NewCloud, caCert []byte) (*gophercloud.ProviderClient, *cli
 			ApplicationCredentialID:     opts.ApplicationCredentialID,
 			ApplicationCredentialName:   opts.ApplicationCredentialName,
 			ApplicationCredentialSecret: opts.ApplicationCredentialSecret,
-			AllowReauth:                 opts.AllowReauth}
+			AllowReauth:                 opts.AllowReauth,
+		}
 		if opts.Scope != nil {
 			tokenauth.Scope.ProjectID = opts.Scope.ProjectID
 			tokenauth.Scope.ProjectName = opts.Scope.ProjectName

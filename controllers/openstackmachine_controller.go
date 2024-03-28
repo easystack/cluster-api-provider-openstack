@@ -442,16 +442,16 @@ func (r *OpenStackMachineReconciler) reconcileNormal(ctx context.Context, scope 
 		// fip has,but not specially one
 		if len(addresses) > 1 {
 			if machine.Annotations["machinedeployment.clusters.x-k8s.io/fip-address"] != "" {
-				if  addresses[1].Address != machine.Annotations["machinedeployment.clusters.x-k8s.io/fip-address"]{
+				if addresses[1].Address != machine.Annotations["machinedeployment.clusters.x-k8s.io/fip-address"] {
 					gcFip := addresses[1].Address
-					//gc fip
-					r.gcFip(openStackMachine, networkingService, gcFip,scope)
-				}else{
+					// gc fip
+					r.gcFip(openStackMachine, networkingService, gcFip, scope)
+				} else {
 					conditions.MarkTrue(openStackMachine, infrav1.APIServerIngressReadyCondition)
 					scope.Logger.Info("Reconciled Machine create successfully")
 					return ctrl.Result{}, nil
 				}
-			}else {
+			} else {
 				conditions.MarkTrue(openStackMachine, infrav1.APIServerIngressReadyCondition)
 				scope.Logger.Info("Reconciled Machine create successfully")
 				return ctrl.Result{}, nil
@@ -462,13 +462,13 @@ func (r *OpenStackMachineReconciler) reconcileNormal(ctx context.Context, scope 
 			conditions.MarkFalse(openStackMachine, infrav1.APIServerIngressReadyCondition, infrav1.FloatingIPErrorReason, clusterv1.ConditionSeverityError, "Floating IP cannot be obtained or created: %v", err)
 			return ctrl.Result{}, nil
 		}
-		var port = new(networkport.Port)
+		port := new(networkport.Port)
 		// we should get machine network name if we define network
 		pos, err := networkingService.GetPortFromInstanceIP(*openStackMachine.Spec.InstanceID, instanceNS.Addresses()[0].Address)
 		if err != nil {
-			//gc fip when error occur
+			// gc fip when error occur
 			defer func() {
-				r.gcFip(openStackMachine, networkingService, fp.FloatingIP,scope)
+				r.gcFip(openStackMachine, networkingService, fp.FloatingIP, scope)
 			}()
 			conditions.MarkFalse(openStackMachine, infrav1.APIServerIngressReadyCondition, infrav1.FloatingIPErrorReason, clusterv1.ConditionSeverityError, "failed to get machine ports information: %v", err)
 			return ctrl.Result{}, nil
@@ -481,13 +481,13 @@ func (r *OpenStackMachineReconciler) reconcileNormal(ctx context.Context, scope 
 			err = networkingService.AssociateFloatingIP(openStackMachine, fp, port.ID)
 			if err != nil {
 				defer func() {
-					r.gcFip(openStackMachine, networkingService, fp.FloatingIP,scope)
+					r.gcFip(openStackMachine, networkingService, fp.FloatingIP, scope)
 				}()
 				conditions.MarkFalse(openStackMachine, infrav1.APIServerIngressReadyCondition, infrav1.FloatingIPErrorReason, clusterv1.ConditionSeverityError, "Associating floating IP failed: %v", err)
 				return ctrl.Result{}, fmt.Errorf("associate floating IP %q with port %q: %w", fp.FloatingIP, port.ID, err)
 			}
 		}
-	}else{
+	} else {
 		for _, address := range addresses {
 			if address.Type == corev1.NodeExternalIP {
 				if err = networkingService.DeleteFloatingIP(openStackCluster, address.Address); err != nil {
@@ -503,11 +503,12 @@ func (r *OpenStackMachineReconciler) reconcileNormal(ctx context.Context, scope 
 	scope.Logger.Info("Reconciled Machine create successfully")
 	return ctrl.Result{}, nil
 }
-//gcFip add  code to GC fip
+
+// gcFip add  code to GC fip
 func (r *OpenStackMachineReconciler) gcFip(openStackMachine *infrav1.OpenStackMachine, networkingService *networking.Service, fp string, scope *scope.Scope) {
-		if err := networkingService.DeleteFloatingIP(openStackMachine, fp); err != nil {
-			scope.Logger.Info("when GC fip,delete floating ip failed", "err", err)
-		}
+	if err := networkingService.DeleteFloatingIP(openStackMachine, fp); err != nil {
+		scope.Logger.Info("when GC fip,delete floating ip failed", "err", err)
+	}
 }
 
 func (r *OpenStackMachineReconciler) getOrCreate(logger logr.Logger, cluster *clusterv1.Cluster, openStackCluster *infrav1.OpenStackCluster, machine *clusterv1.Machine, openStackMachine *infrav1.OpenStackMachine, computeService *compute.Service, userData string) (*compute.InstanceStatus, error) {
@@ -531,19 +532,19 @@ func (r *OpenStackMachineReconciler) getOrCreate(logger logr.Logger, cluster *cl
 
 func machineToInstanceSpec(openStackCluster *infrav1.OpenStackCluster, machine *clusterv1.Machine, openStackMachine *infrav1.OpenStackMachine, userData string) *compute.InstanceSpec {
 	instanceSpec := compute.InstanceSpec{
-		Name:          openStackMachine.Name,
-		Image:         openStackMachine.Spec.Image,
-		ImageUUID:     openStackMachine.Spec.ImageUUID,
-		Flavor:        openStackMachine.Spec.Flavor,
-		SSHKeyName:    openStackMachine.Spec.SSHKeyName,
-		UserData:      userData,
-		Metadata:      openStackMachine.Spec.ServerMetadata,
-		ConfigDrive:   openStackMachine.Spec.ConfigDrive != nil && *openStackMachine.Spec.ConfigDrive,
-		RootVolume:    openStackMachine.Spec.RootVolume,
-		CustomeVolumes: openStackMachine.Spec.CustomeVolumes,
-		Subnet:        openStackMachine.Spec.Subnet,
-		ServerGroupID: openStackMachine.Spec.ServerGroupID,
-		Trunk:         openStackMachine.Spec.Trunk,
+		Name:                      openStackMachine.Name,
+		Image:                     openStackMachine.Spec.Image,
+		ImageUUID:                 openStackMachine.Spec.ImageUUID,
+		Flavor:                    openStackMachine.Spec.Flavor,
+		SSHKeyName:                openStackMachine.Spec.SSHKeyName,
+		UserData:                  userData,
+		Metadata:                  openStackMachine.Spec.ServerMetadata,
+		ConfigDrive:               openStackMachine.Spec.ConfigDrive != nil && *openStackMachine.Spec.ConfigDrive,
+		RootVolume:                openStackMachine.Spec.RootVolume,
+		CustomeVolumes:            openStackMachine.Spec.CustomeVolumes,
+		Subnet:                    openStackMachine.Spec.Subnet,
+		ServerGroupID:             openStackMachine.Spec.ServerGroupID,
+		Trunk:                     openStackMachine.Spec.Trunk,
 		DeleteVolumeOnTermination: openStackMachine.Spec.DeleteVolumeOnTermination,
 	}
 
