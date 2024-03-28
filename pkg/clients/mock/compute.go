@@ -23,11 +23,11 @@ package mock
 import (
 	reflect "reflect"
 
+	clients "github.com/easystack/cluster-api-provider-openstack/pkg/clients"
 	gomock "github.com/golang/mock/gomock"
 	attachinterfaces "github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/attachinterfaces"
 	availabilityzones "github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/availabilityzones"
 	servers "github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
-	clients "github.com/easystack/cluster-api-provider-openstack/pkg/clients"
 )
 
 // MockComputeClient is a mock of ComputeClient interface.

@@ -90,7 +90,7 @@ type OpenStackMachineSpec struct {
 
 	// The volume metadata to boot from
 	RootVolume *RootVolume `json:"rootVolume,omitempty"`
-	
+
 	// The custome metadata to boot from
 	CustomeVolumes []*RootVolume `json:"customeVolumes,omitempty"`
 

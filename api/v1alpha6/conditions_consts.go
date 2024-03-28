@@ -51,3 +51,13 @@ const (
 	// FloatingIPErrorReason used when the floating ip could not be created or attached.
 	FloatingIPErrorReason = "FloatingIPError"
 )
+
+const (
+	ClusterReadyCondition clusterv1.ConditionType = "ClusterReady"
+	// ClusterNotReadyReason used when create the cluster failed.
+	ClusterNotReadyReason = "ClusterNotReady"
+	// ClusterReadyReason reports on current status of the OpenStack cluster. Ready indicates the cluster is in a OK state.
+	ClusterReadyReason = "ClusterReady"
+	// LoadBalancerReconcileErrorReason used when the openstack create loadbalancer error.
+	LoadBalancerReconcileErrorReason = "LoadBalancerReconcileError"
+)

@@ -190,9 +190,9 @@ func main() {
 	// Initialize event recorder.
 	record.InitFromRecorder(mgr.GetEventRecorderFor("openstack-controller"))
 
-	setupChecks(mgr)
+	// setupChecks(mgr)
 	setupReconcilers(ctx, mgr)
-	setupWebhooks(mgr)
+	// setupWebhooks(mgr)
 
 	// +kubebuilder:scaffold:builder
 	setupLog.Info("starting manager", "version", version.Get().String())

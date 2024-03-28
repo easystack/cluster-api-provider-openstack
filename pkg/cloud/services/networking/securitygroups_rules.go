@@ -40,6 +40,7 @@ var defaultRules = []infrav1.SecurityGroupRule{
 		RemoteIPPrefix: "",
 	},
 }
+
 // Permit traffic for cadvisor
 func GetSGControlPlaneForCadvisor(remoteGroupIDSelf, secWorkerGroupID string) []infrav1.SecurityGroupRule {
 	return []infrav1.SecurityGroupRule{
@@ -87,42 +88,40 @@ func GetSGWorkForCadvisor(remoteGroupIDSelf, secControlPlaneGroupID string) []in
 	}
 }
 
-
-
 // Permit traffic for coredns
 func GetSGControlPlaneForCOREDNS(remoteGroupIDSelf, secWorkerGroupID string) []infrav1.SecurityGroupRule {
 	return []infrav1.SecurityGroupRule{
 		{
-			Description:   "coredns",
-			Direction:     "ingress",
-			EtherType:     "IPv4",
-			PortRangeMin:  9153,
-			PortRangeMax:  9153,
-			Protocol:      "tcp",
+			Description:  "coredns",
+			Direction:    "ingress",
+			EtherType:    "IPv4",
+			PortRangeMin: 9153,
+			PortRangeMax: 9153,
+			Protocol:     "tcp",
 		},
 		{
-			Description:   "coredns",
-			Direction:     "ingress",
-			EtherType:     "IPv4",
-			PortRangeMin:  9253,
-			PortRangeMax:  9253,
-			Protocol:      "tcp",
+			Description:  "coredns",
+			Direction:    "ingress",
+			EtherType:    "IPv4",
+			PortRangeMin: 9253,
+			PortRangeMax: 9253,
+			Protocol:     "tcp",
 		},
 		{
-			Description:   "coredns",
-			Direction:     "ingress",
-			EtherType:     "IPv4",
-			PortRangeMin:  53,
-			PortRangeMax:  53,
-			Protocol:      "tcp",
+			Description:  "coredns",
+			Direction:    "ingress",
+			EtherType:    "IPv4",
+			PortRangeMin: 53,
+			PortRangeMax: 53,
+			Protocol:     "tcp",
 		},
 		{
-			Description:   "coredns",
-			Direction:     "ingress",
-			EtherType:     "IPv4",
-			PortRangeMin:  53,
-			PortRangeMax:  53,
-			Protocol:      "udp",
+			Description:  "coredns",
+			Direction:    "ingress",
+			EtherType:    "IPv4",
+			PortRangeMin: 53,
+			PortRangeMax: 53,
+			Protocol:     "udp",
 		},
 	}
 }
@@ -130,41 +129,39 @@ func GetSGControlPlaneForCOREDNS(remoteGroupIDSelf, secWorkerGroupID string) []i
 func GetSGWorkForCOREDNS(remoteGroupIDSelf, secControlPlaneGroupID string) []infrav1.SecurityGroupRule {
 	return []infrav1.SecurityGroupRule{
 		{
-			Description:   "coredns",
-			Direction:     "ingress",
-			EtherType:     "IPv4",
-			PortRangeMin:  9153,
-			PortRangeMax:  9153,
-			Protocol:      "tcp",
+			Description:  "coredns",
+			Direction:    "ingress",
+			EtherType:    "IPv4",
+			PortRangeMin: 9153,
+			PortRangeMax: 9153,
+			Protocol:     "tcp",
 		},
 		{
-			Description:   "coredns",
-			Direction:     "ingress",
-			EtherType:     "IPv4",
-			PortRangeMin:  9253,
-			PortRangeMax:  9253,
-			Protocol:      "tcp",
+			Description:  "coredns",
+			Direction:    "ingress",
+			EtherType:    "IPv4",
+			PortRangeMin: 9253,
+			PortRangeMax: 9253,
+			Protocol:     "tcp",
 		},
 		{
-			Description:   "coredns",
-			Direction:     "ingress",
-			EtherType:     "IPv4",
-			PortRangeMin:  53,
-			PortRangeMax:  53,
-			Protocol:      "tcp",
+			Description:  "coredns",
+			Direction:    "ingress",
+			EtherType:    "IPv4",
+			PortRangeMin: 53,
+			PortRangeMax: 53,
+			Protocol:     "tcp",
 		},
 		{
-			Description:   "coredns",
-			Direction:     "ingress",
-			EtherType:     "IPv4",
-			PortRangeMin:  53,
-			PortRangeMax:  53,
-			Protocol:      "udp",
+			Description:  "coredns",
+			Direction:    "ingress",
+			EtherType:    "IPv4",
+			PortRangeMin: 53,
+			PortRangeMax: 53,
+			Protocol:     "udp",
 		},
 	}
 }
-
-
 
 // Permit traffic for prometheus
 func GetSGControlPlaneForPrometheus(remoteGroupIDSelf, secWorkerGroupID string) []infrav1.SecurityGroupRule {
@@ -387,7 +384,6 @@ func GetSGControlPlaneForPrometheus(remoteGroupIDSelf, secWorkerGroupID string) 
 		},
 	}
 }
-
 
 func GetSGWorkForPrometheus(remoteGroupIDSelf, secControlPlaneGroupID string) []infrav1.SecurityGroupRule {
 	return []infrav1.SecurityGroupRule{
@@ -614,12 +610,12 @@ func GetSGWorkForPrometheus(remoteGroupIDSelf, secControlPlaneGroupID string) []
 func getSGControlPlaneCommon(remoteGroupIDSelf, secWorkerGroupID string) []infrav1.SecurityGroupRule {
 	return []infrav1.SecurityGroupRule{
 		{
-			Description:   "Etcd",
-			Direction:     "ingress",
-			EtherType:     "IPv4",
-			PortRangeMin:  2379,
-			PortRangeMax:  2380,
-			Protocol:      "tcp",
+			Description:  "Etcd",
+			Direction:    "ingress",
+			EtherType:    "IPv4",
+			PortRangeMin: 2379,
+			PortRangeMax: 2380,
+			Protocol:     "tcp",
 		},
 		{
 			// kubeadm says this is needed
@@ -779,10 +775,10 @@ func GetSGWorkerSSH(secBastionGroupID string) []infrav1.SecurityGroupRule {
 func GetSGControlPlaneICMP(remoteGroupIDSelf string) []infrav1.SecurityGroupRule {
 	return []infrav1.SecurityGroupRule{
 		{
-			Description:   "ICMP",
-			Direction:     "ingress",
-			EtherType:     "IPv4",
-			Protocol:      "icmp",
+			Description: "ICMP",
+			Direction:   "ingress",
+			EtherType:   "IPv4",
+			Protocol:    "icmp",
 		},
 	}
 }
@@ -791,10 +787,10 @@ func GetSGControlPlaneICMP(remoteGroupIDSelf string) []infrav1.SecurityGroupRule
 func GetSGWorkerICMP(remoteGroupIDSelf string) []infrav1.SecurityGroupRule {
 	return []infrav1.SecurityGroupRule{
 		{
-			Description:   "ICMP",
-			Direction:     "ingress",
-			EtherType:     "IPv4",
-			Protocol:      "icmp",
+			Description: "ICMP",
+			Direction:   "ingress",
+			EtherType:   "IPv4",
+			Protocol:    "icmp",
 		},
 	}
 }
@@ -819,16 +815,16 @@ func GetSGControlPlaneOrWorkIngress() []infrav1.SecurityGroupRule {
 			Protocol:     "tcp",
 		},
 	}
-
 }
+
 // Permit traffic for flannel.
 func GetSGControlPlaneFlannel() []infrav1.SecurityGroupRule {
 	return []infrav1.SecurityGroupRule{
 		{
-			Description: "flannel",
-			Direction:   "ingress",
-			EtherType:   "IPv4",
-			Protocol:    "udp",
+			Description:  "flannel",
+			Direction:    "ingress",
+			EtherType:    "IPv4",
+			Protocol:     "udp",
 			PortRangeMin: 8472,
 			PortRangeMax: 8472,
 		},
@@ -838,10 +834,10 @@ func GetSGControlPlaneFlannel() []infrav1.SecurityGroupRule {
 func GetSGWorkerFlannel() []infrav1.SecurityGroupRule {
 	return []infrav1.SecurityGroupRule{
 		{
-			Description: "flannel",
-			Direction:   "ingress",
-			EtherType:   "IPv4",
-			Protocol:    "udp",
+			Description:  "flannel",
+			Direction:    "ingress",
+			EtherType:    "IPv4",
+			Protocol:     "udp",
 			PortRangeMin: 8472,
 			PortRangeMax: 8472,
 		},
@@ -849,13 +845,13 @@ func GetSGWorkerFlannel() []infrav1.SecurityGroupRule {
 }
 
 // Permit traffic for keepalived
-func GetSGControlPlaneOrWorkVRRP() []infrav1.SecurityGroupRule  {
-	return []infrav1.SecurityGroupRule {
+func GetSGControlPlaneOrWorkVRRP() []infrav1.SecurityGroupRule {
+	return []infrav1.SecurityGroupRule{
 		{
-			Description:   "keepalived",
-			Direction:     "ingress",
-			EtherType:     "IPv4",
-			Protocol:      "vrrp",
+			Description: "keepalived",
+			Direction:   "ingress",
+			EtherType:   "IPv4",
+			Protocol:    "vrrp",
 		},
 	}
 }
